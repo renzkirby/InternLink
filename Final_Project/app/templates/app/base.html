@@ -1,11 +1,18 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
    <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>InternLink</title>
+      <link rel="stylesheet" href="{% static 'css/base.css' %}" />
    </head>
    <body>
-      {% block content %} {% endblock content%}
+      <header>
+         <h2>InternLink</h2>
+         <h3>{% block header %}{% endblock header %}</h3>
+         <img src="{% static 'images/profile 64px.png'%}" id="profile" />
+      </header>
+      {% block content %} {% endblock content %}
    </body>
 </html>

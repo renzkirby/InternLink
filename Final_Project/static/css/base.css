@@ -1,0 +1,48 @@
+:root {
+    --primary-blue: #2563EB;
+    /*for navbar, buttons, highlights, and active states.*/
+    --primary-dark-blue: #1E3A8A;
+    /*for hover states, accents, or section headers.*/
+    --secondary-green: #10B981;
+    /*for success states, approved statuses, and positive indicators.*/
+    --secondary-orange: #F59E0B;
+    /*for pending statuses or light warnings.*/
+    --secondary-red: #EF4444;
+    /*for rejections, errors, and destructive actions.*/
+    --background-light: #F8FAFC;
+    /*General page background*/
+    --card-background: #FFFFFF;
+    /**/
+    --text-dark: #1E293B;
+    /**/
+    --text-gray: #64748B;
+    /*For low emphasis text like timestamps, labels.*/
+    --border-color: #E2E8F0;
+    /**/
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--background-light);
+    color: var(--text-dark)
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em 2em;
+    border-bottom: var(--border-color) 2px solid;
+    background-color: var(--primary-blue);
+}
+
+#profile {
+    width: 50px;
+    height: auto;
+}
