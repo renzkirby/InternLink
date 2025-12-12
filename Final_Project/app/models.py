@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+from decimal import ROUND_HALF_UP, Decimal
 from datetime import date, datetime, timedelta
 
 
@@ -23,7 +25,7 @@ class StudentProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="student_profile",
     )
-    student_number = models.CharField(max_length=50)
+    student_number = models.CharField(max_length=50, unique=True)
     course = models.CharField(max_length=100)
     year_level = models.IntegerField()
     contact_number = models.CharField(max_length=20)
@@ -130,15 +132,19 @@ class DailyLog(models.Model):
     )
 
     work_description = models.TextField(help_text="Summary of tasks accomplished")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if self.time_in and self.time_out:
             t1 = datetime.combine(date.min, self.time_in)
             t2 = datetime.combine(date.min, self.time_out)
-
+            if t2 <= t1:
+                t2 = t2 + timedelta(days=1)
             diff = t2 - t1
-            total_seconds = diff.total_seconds()
-            self.hours_rendered = round(total_seconds / 3600, 2)
+            total_hours = Decimal(diff.total_seconds() / 3600).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            self.hours_rendered = total_hours
 
         super().save(*args, **kwargs)
 
@@ -147,7 +153,7 @@ class DailyLog(models.Model):
 
 
 def student_report_upload_path(instance, filename):
-    student_id = instance.internship.student.id
+    student_id = instance.internship.student.student_number
     return f"reports/{student_id}/{instance.report_type}/{filename}"
 
 
@@ -168,9 +174,10 @@ class StudentReport(models.Model):
     report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to=student_report_upload_path)
-    week_number = models.PositiveIntegerField()
+    week_number = models.PositiveIntegerField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     supervisor_remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.title} ({self.get_report_type_display()})"
@@ -198,14 +205,24 @@ class Evaluation(models.Model):
     period_start = models.DateField()
     period_end = models.DateField()
 
-    punctuality = models.PositiveSmallIntegerField()
-    work_quality = models.PositiveSmallIntegerField()
-    communication = models.PositiveSmallIntegerField()
-    teamwork = models.PositiveSmallIntegerField()
-    initiative = models.PositiveSmallIntegerField()
+    punctuality = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    work_quality = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    communication = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    teamwork = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    initiative = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
 
     comments = models.TextField()
-    evaluation_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Evaluation for {self.internship.student.user.get_full_name()} by {self.evaluator_role.title()}"
