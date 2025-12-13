@@ -224,5 +224,19 @@ class Evaluation(models.Model):
     comments = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def total_score(self):
+        return (
+            self.punctuality
+            + self.work_quality
+            + self.communication
+            + self.teamwork
+            + self.initiative
+        )
+
+    @property
+    def average_score(self):
+        return self.total_score / 5.0
+
     def __str__(self):
         return f"Evaluation for {self.internship.student.user.get_full_name()} by {self.evaluator_role.title()}"
