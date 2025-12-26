@@ -30,3 +30,10 @@ class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = StudentProfile
         fields = ["student_number", "course", "year_level", "contact_number"]
+
+        widgets = {
+            "student_number": forms.TextInput(attrs={"placeholder": "e.g. 2023-0001"}),
+            "course": forms.TextInput(
+                attrs={"placeholder": "e.g. BS Information Technology"}
+            ),
+        }

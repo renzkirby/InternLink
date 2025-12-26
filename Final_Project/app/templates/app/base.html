@@ -16,17 +16,25 @@
           <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
             <li class="nav-item">
-              <span class="nav-link text-white">{{ user.role }}</span>
+              <span class="nav-link text-white fw-bold">
+                Hello, {{ user.first_name|default:user.username }}
+              </span>
             </li>
             <li class="nav-item">
-              <span class="nav-link text-white"
-                >Hello, {{ user.username }}</span
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="#">Logout</a>
+              <form action="{% url 'logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="nav-link btn btn-link text-white"
+                  style="text-decoration: none">
+                  Logout
+                </button>
+              </form>
             </li>
             {% else %}
+            <li class="nav-item">
+              <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+            </li>
             <li class="nav-item">
               <a class="nav-link text-white" href="{% url 'register' %}"
                 >Register</a

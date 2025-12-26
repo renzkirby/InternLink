@@ -1,0 +1,54 @@
+{% extends 'app/base.html' %} {% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>Welcome, {{ user.first_name }}!</h2>
+      <p class="text-muted">Student Dashboard</p>
+    </div>
+  </div>
+
+  {% if not profile.student_number %}
+  <div
+    class="alert alert-warning shadow-sm d-flex align-items-center"
+    role="alert">
+    <div class="flex-grow-1">
+      <strong>Action Required:</strong> You haven't set up your student profile
+      yet. You must complete this before applying for internships.
+    </div>
+    <a href="#" class="btn btn-warning">Complete Profile Now</a>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3 shadow">
+        <div class="card-header">Internship Status</div>
+        <div class="card-body">
+          <h5 class="card-title">Not Started</h5>
+          <p class="card-text">You are not currently linked to a company.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3 shadow">
+        <div class="card-header">Total Hours</div>
+        <div class="card-body">
+          <h5 class="card-title">0.0 / 600</h5>
+          <p class="card-text">Hours Approved</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card bg-light mb-3 shadow">
+        <div class="card-header">Recent Activity</div>
+        <div class="card-body">
+          <p class="card-text text-muted">No recent logs found.</p>
+          <a href="#" class="btn btn-sm btn-outline-primary">Add Time Log</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
