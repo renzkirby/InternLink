@@ -16,4 +16,5 @@ urlpatterns = [
     path(
         "profile/update/", views.student_profile_update, name="student_profile_update"
     ),
+    path("log/add/", views.add_daily_log, name="add_daily_log"),
 ]

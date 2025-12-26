@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, StudentProfile
+from .models import User, StudentProfile, DailyLog
 
 
 class StudentRegistrationForm(UserCreationForm):
@@ -35,5 +35,22 @@ class StudentProfileForm(forms.ModelForm):
             "student_number": forms.TextInput(attrs={"placeholder": "e.g. 2023-0001"}),
             "course": forms.TextInput(
                 attrs={"placeholder": "e.g. BS Information Technology"}
+            ),
+        }
+
+
+class DailyLogForm(forms.ModelForm):
+    class Meta:
+        model = DailyLog
+        fields = ["date", "time_in", "time_out", "work_description"]
+
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "time_in": forms.TimeInput(attrs={"type": "time", "class": "form-control"}),
+            "time_out": forms.TimeInput(
+                attrs={"type": "time", "class": "form-control"}
+            ),
+            "work_description": forms.Textarea(
+                attrs={"rows": 3, "placeholder": "What did you accomplish today?"}
             ),
         }

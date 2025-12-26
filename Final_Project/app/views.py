@@ -3,7 +3,9 @@ from django.views.generic import TemplateView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import StudentRegistrationForm, User, StudentProfileForm
+from django.db.models import Sum
+from .forms import StudentRegistrationForm, User, StudentProfileForm, DailyLogForm
+from .models import Internship, DailyLog
 
 
 # Create your views here.
@@ -28,9 +30,36 @@ def dashboard_view(request):
     user = request.user
 
     if user.role == User.Role.STUDENT:
-        return render(
-            request, "app/student_dashboard.html", {"profile": user.student_profile}
-        )
+        student_profile = user.student_profile
+        active_internship = Internship.objects.filter(
+            student=student_profile, status="ongoing"
+        ).first()
+
+        total_hours = 0
+        recent_logs = []
+        required_hours = 600
+        completion_percent = 0
+
+        if active_internship:
+            required_hours = active_internship.required_hours
+            hours_data = active_internship.daily_logs.aggregate(Sum("hours_rendered"))
+            total_hours = hours_data["hours_rendered__sum"] or 0
+
+            if required_hours > 0:
+                completion_percent = (total_hours / required_hours) * 100
+
+            recent_logs = active_internship.daily_logs.order_by("-date")[:5]
+
+        context = {
+            "profile": student_profile,
+            "internship": active_internship,
+            "total_hours": total_hours,
+            "required_hours": required_hours,
+            "completion_percent": round(completion_percent, 1),
+            "recent_logs": recent_logs,
+        }
+
+        return render(request, "app/student_dashboard.html", context)
     elif user.role == User.Role.COORDINATOR:
         return render(request, "app/coordinator_dahsboard.html")
     elif user.role == User.Role.SUPERVISOR:
@@ -53,3 +82,26 @@ def student_profile_update(request):
         form = StudentProfileForm(instance=profile)
 
     return render(request, "app/student_profile_update.html", {"form": form})
+
+
+@login_required
+def add_daily_log(request):
+    active_internship = Internship.objects.filter(
+        student__user=request.user, status="ongoing"
+    ).first()
+
+    if not active_internship:
+        messages.error(request, "You do not have an active internship.")
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = DailyLogForm(request.POST)
+        if form.is_valid():
+            log = form.save(commit=False)
+            log.internship = active_internship
+            log.save()
+            messages.success(request, "Time log submitted successfully!")
+    else:
+        form = DailyLogForm()
+
+    return render(request, "app/add_daily_log.html", {"form": form})
