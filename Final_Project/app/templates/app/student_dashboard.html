@@ -15,7 +15,9 @@
       <strong>Action Required:</strong> You haven't set up your student profile
       yet. You must complete this before applying for internships.
     </div>
-    <a href="#" class="btn btn-warning">Complete Profile Now</a>
+    <a href="{% url 'student_profile_update' %}" class="btn btn-warning"
+      >Complete Profile Now</a
+    >
   </div>
   {% endif %}
 
