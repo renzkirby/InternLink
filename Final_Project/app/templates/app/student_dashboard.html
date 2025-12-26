@@ -46,10 +46,11 @@
           <h3 class="card-title">
             {{ total_hours }} <span class="fs-6">/ {{ required_hours }}</span>
           </h3>
+          <p class="card-text mb-1">Approved Hours</p>
 
           <div class="progress mt-2" style="height: 5px">
             <div
-              class="progress-bar bg-light"
+              class="progress-bar bg-alert"
               role="progressbar"
               style="width: {{ completion_percent }}%;"
               aria-valuenow="{{ completion_percent }}"
@@ -79,6 +80,7 @@
                   <th>Date</th>
                   <th>Hours</th>
                   <th>Description</th>
+                  <th class="text-center">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,11 +88,19 @@
                 <tr>
                   <td>{{ log.date|date:"M d" }}</td>
                   <td>
-                    <span class="badge bg-success"
+                    <span class="badge bg-secondary"
                       >{{ log.hours_rendered }} hrs</span
                     >
                   </td>
                   <td>{{ log.work_description|truncatechars:30 }}</td>
+
+                  <td class="text-center">
+                    {% if log.is_verified %}
+                    <span class="badge bg-success">Approved</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>

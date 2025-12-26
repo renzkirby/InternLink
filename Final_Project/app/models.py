@@ -62,7 +62,7 @@ class SupervisorProfile(models.Model):
     contact_number = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
-        return f"Supervisor: {self.user.get_full_name()} {(self.company.name)}"
+        return f"Supervisor: {self.user.get_full_name()} ({(self.company.name)})"
 
 
 class Company(models.Model):
@@ -128,11 +128,16 @@ class DailyLog(models.Model):
     time_in = models.TimeField()
     time_out = models.TimeField()
     hours_rendered = models.DecimalField(
-        max_digits=5, decimal_places=2, help_text="Total hours for the day"
+        max_digits=5,
+        decimal_places=2,
+        help_text="Total hours for the day",
+        blank=True,
+        null=True,
     )
 
     work_description = models.TextField(help_text="Summary of tasks accomplished")
     created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.time_in and self.time_out:
@@ -153,7 +158,7 @@ class DailyLog(models.Model):
 
 
 def student_report_upload_path(instance, filename):
-    student_id = instance.internship.student.student_number
+    student_id = instance.internship.student.id
     return f"reports/{student_id}/{instance.report_type}/{filename}"
 
 

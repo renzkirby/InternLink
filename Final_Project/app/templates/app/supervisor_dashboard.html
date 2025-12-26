@@ -1,0 +1,62 @@
+{% extends 'app/base.html' %} {% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2>Supervisor Dashboard</h2>
+      <p class="text-muted">
+        Welcome, {{ supervisor.user.first_name }} ({{ supervisor.company.name }}
+        )
+      </p>
+    </div>
+  </div>
+
+  <div class="card shadow">
+    <div
+      class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Pending Approvals</h5>
+      <span class="badge bg-dark">{{ pending_logs.count }} Pending</span>
+    </div>
+    <div class="card-body p-0">
+      {% if pending_logs %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Student</th>
+              <th>Date</th>
+              <th>Hours</th>
+              <th>Task Summary</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in pending_logs %}
+            <tr>
+              <td class="fw-bold">
+                {{ log.internship.student.user.first_name }}
+              </td>
+              <td>{{ log.date }}</td>
+              <td>{{ log.hours_rendered }}</td>
+              <td>{{ log.work_description|truncatechars:50 }}</td>
+              <td>
+                <a
+                  href="{% url 'approve_log' log.id %}"
+                  class="btn btn-sm btn-success">
+                  Approve
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-5 text-center text-muted">
+        <h5>All caught up!</h5>
+        <p>No pending logs to review.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

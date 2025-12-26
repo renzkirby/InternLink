@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -42,7 +42,9 @@ def dashboard_view(request):
 
         if active_internship:
             required_hours = active_internship.required_hours
-            hours_data = active_internship.daily_logs.aggregate(Sum("hours_rendered"))
+            hours_data = active_internship.daily_logs.filter(
+                is_verified=True
+            ).aggregate(Sum("hours_rendered"))
             total_hours = hours_data["hours_rendered__sum"] or 0
 
             if required_hours > 0:
@@ -63,7 +65,14 @@ def dashboard_view(request):
     elif user.role == User.Role.COORDINATOR:
         return render(request, "app/coordinator_dahsboard.html")
     elif user.role == User.Role.SUPERVISOR:
-        return render(request, "app/supervisor_dashboard.html")
+        supervisor_profile = user.supervisor_profile
+        pending_logs = DailyLog.objects.filter(
+            internship__supervisor=supervisor_profile, is_verified=False
+        ).order_by("date")
+
+        context = {"supervisor": supervisor_profile, "pending_logs": pending_logs}
+
+        return render(request, "app/supervisor_dashboard.html", context)
 
     return render(request, "app/error_dashboard.html")
 
@@ -105,3 +114,20 @@ def add_daily_log(request):
         form = DailyLogForm()
 
     return render(request, "app/add_daily_log.html", {"form": form})
+
+
+@login_required
+def approve_log(request, log_id):
+    log = get_object_or_404(DailyLog, id=log_id)
+
+    if request.user.supervisor_profile != log.internship.supervisor:
+        messages.error(request, "You are not authorized to approve this log.")
+        return redirect("dashboard")
+
+    log.is_verified = True
+    log.save()
+
+    messages.success(
+        request, f"Log for {log.internship.student.user.first_name} approved."
+    )
+    return redirect("dashboard")
