@@ -39,8 +39,10 @@ def dashboard_view(request):
         recent_logs = []
         required_hours = 600
         completion_percent = 0
+        documents_count = 0
 
         if active_internship:
+            documents_count = active_internship.student_reports.count()
             required_hours = active_internship.required_hours
             hours_data = active_internship.daily_logs.filter(
                 is_verified=True
@@ -59,6 +61,7 @@ def dashboard_view(request):
             "required_hours": required_hours,
             "completion_percent": round(completion_percent, 1),
             "recent_logs": recent_logs,
+            "documents_uploaded": documents_count,
         }
 
         return render(request, "app/student_dashboard.html", context)
@@ -192,4 +195,41 @@ def evaluate_student(request, internship_id):
 
     return render(
         request, "app/evaluate_student.html", {"form": form, "internship": internship}
+    )
+
+
+@login_required
+def upload_document(request):
+    if not hasattr(request.user, "student_profile"):
+        return redirect("dashboard")
+
+    active_internship = Internship.objects.filter(
+        student=request.user.student_profile, status="ongoing"
+    ).first()
+
+    if not active_internship:
+        messages.error(
+            request, "You must have an active internship to upload documents."
+        )
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = StudentReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.internship = active_internship
+            report.save()
+
+            messages.success(request, "Document uploaded successfully!")
+            return redirect("dashboard")
+
+    else:
+        form = StudentReportForm()
+
+    existing_reports = active_internship.student_reports.all().order_by("-submitted_at")
+
+    return render(
+        request,
+        "app/upload_document.html",
+        {"form": form, "existing_reports": existing_reports},
     )

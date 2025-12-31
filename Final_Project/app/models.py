@@ -159,6 +159,8 @@ class DailyLog(models.Model):
 
 def student_report_upload_path(instance, filename):
     student_id = instance.internship.student.id
+    if instance.report_type == "weekly_report" and instance.week_number:
+        return f"reports/{student_id}/week_{instance.week_number}/{filename}"
     return f"reports/{student_id}/{instance.report_type}/{filename}"
 
 
@@ -166,7 +168,7 @@ class StudentReport(models.Model):
     REPORT_TYPES = [
         ("weekly_report", "Weekly Report"),
         ("narrative", "Narrative Report"),
-        ("resume", "Resume"),
+        ("resume", "Resume/CV"),
         ("moa", "Memorandum of Agreement"),
         ("reflection", "Reflection Paper"),
         ("other", "Other"),
@@ -182,10 +184,10 @@ class StudentReport(models.Model):
     week_number = models.PositiveIntegerField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     supervisor_remarks = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} ({self.get_report_type_display()})"
+        return f"{self.title} ({self.get_report_type_display()}) - {self.internship.student.user.get_full_name()}"
 
 
 class Evaluation(models.Model):

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, StudentProfile, DailyLog, Evaluation
+from .models import User, StudentProfile, DailyLog, Evaluation, StudentReport
 
 
 class StudentRegistrationForm(UserCreationForm):
@@ -98,3 +98,26 @@ class EvaluationForm(forms.ModelForm):
         ]
         for field in score_fields:
             self.fields[field].widget = forms.RadioSelect(choices=SCORE_CHOICES)
+
+
+class StudentReportForm(forms.ModelForm):
+    class Meta:
+        model = StudentReport
+        fields = ["report_type", "title", "week_number", "file"]
+
+        widgets = {
+            "report_type": forms.Select(attrs={"class": "form-select"}),
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g., Week 1 Accomplishment Report",
+                }
+            ),
+            "week_number": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Optional (for Weekly Reports)",
+                }
+            ),
+            "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }

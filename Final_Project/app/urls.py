@@ -21,4 +21,5 @@ urlpatterns = [
     path(
         "evaluate/<int:internship_id>/", views.evaluate_student, name="evaluate_student"
     ),
+    path("documents/upload/", views.upload_document, name="upload_document"),
 ]
