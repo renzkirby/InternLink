@@ -18,4 +18,7 @@ urlpatterns = [
     ),
     path("log/add/", views.add_daily_log, name="add_daily_log"),
     path("log/approve/<int:log_id>/", views.approve_log, name="approve_log"),
+    path(
+        "evaluate/<int:internship_id>/", views.evaluate_student, name="evaluate_student"
+    ),
 ]

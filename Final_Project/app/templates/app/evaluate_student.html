@@ -1,0 +1,48 @@
+{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0">Performance Evaluation</h4>
+          <small>Student: {{ internship.student.user.get_full_name }}</small>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                {{ form.period_start|as_crispy_field }}
+              </div>
+              <div class="col-md-6">{{ form.period_end|as_crispy_field }}</div>
+            </div>
+
+            <hr />
+            <h6 class="text-muted mb-3">
+              Rating Scale: 1 (Poor) to 5 (Excellent)
+            </h6>
+
+            <div class="row">
+              <div class="col-md-12">
+                {{ form.punctuality|as_crispy_field }} 
+                {{ form.work_quality|as_crispy_field }} 
+                {{ form.communication|as_crispy_field }} 
+                {{ form.teamwork|as_crispy_field }} 
+                {{ form.initiative|as_crispy_field }}
+              </div>
+            </div>
+
+            <hr />
+            {{ form.comments|as_crispy_field }}
+
+            <button type="submit" class="btn btn-info text-white w-100 mt-3">
+              Submit Grade
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

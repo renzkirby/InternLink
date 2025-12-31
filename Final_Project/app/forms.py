@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, StudentProfile, DailyLog
+from .models import User, StudentProfile, DailyLog, Evaluation
 
 
 class StudentRegistrationForm(UserCreationForm):
@@ -54,3 +54,47 @@ class DailyLogForm(forms.ModelForm):
                 attrs={"rows": 3, "placeholder": "What did you accomplish today?"}
             ),
         }
+
+
+class EvaluationForm(forms.ModelForm):
+    class Meta:
+        model = Evaluation
+        fields = [
+            "period_start",
+            "period_end",
+            "punctuality",
+            "work_quality",
+            "communication",
+            "teamwork",
+            "initiative",
+            "comments",
+        ]
+
+        widgets = {
+            "period_start": forms.DateInput(
+                attrs={"type": "date", "class": "form_control"}
+            ),
+            "period_end": forms.DateInput(
+                attrs={"type": "date", "class": "form_control"}
+            ),
+            "comments": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "form-control",
+                    "placeholder": "Feedback for the student...",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        SCORE_CHOICES = [(i, str(i)) for i in range(1, 6)]
+        score_fields = [
+            "punctuality",
+            "work_quality",
+            "communication",
+            "teamwork",
+            "initiative",
+        ]
+        for field in score_fields:
+            self.fields[field].widget = forms.RadioSelect(choices=SCORE_CHOICES)

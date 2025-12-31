@@ -4,8 +4,8 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum
-from .forms import StudentRegistrationForm, User, StudentProfileForm, DailyLogForm
-from .models import Internship, DailyLog
+from .forms import *
+from .models import *
 
 
 # Create your views here.
@@ -62,15 +62,43 @@ def dashboard_view(request):
         }
 
         return render(request, "app/student_dashboard.html", context)
+
     elif user.role == User.Role.COORDINATOR:
-        return render(request, "app/coordinator_dahsboard.html")
+        total_students = StudentProfile.objects.count()
+        ongoing_internships = Internship.objects.filter(status="ongoing").count()
+        total_companies = Company.objects.count()
+
+        recent_deployments = (
+            Internship.objects.select_related("student__user", "company")
+            .all()
+            .order_by("-start_date")
+        )
+
+        context = {
+            "total_students": total_students,
+            "ongoing_internships": ongoing_internships,
+            "total_companies": total_companies,
+            "deployments": recent_deployments,
+        }
+
+        return render(request, "app/coordinator_dahsboard.html", context)
+
     elif user.role == User.Role.SUPERVISOR:
         supervisor_profile = user.supervisor_profile
+
         pending_logs = DailyLog.objects.filter(
             internship__supervisor=supervisor_profile, is_verified=False
         ).order_by("date")
 
-        context = {"supervisor": supervisor_profile, "pending_logs": pending_logs}
+        my_internships = Internship.objects.filter(
+            supervisor=supervisor_profile, status="ongoing"
+        )
+
+        context = {
+            "supervisor": supervisor_profile,
+            "pending_logs": pending_logs,
+            "my_internships": my_internships,
+        }
 
         return render(request, "app/supervisor_dashboard.html", context)
 
@@ -131,3 +159,37 @@ def approve_log(request, log_id):
         request, f"Log for {log.internship.student.user.first_name} approved."
     )
     return redirect("dashboard")
+
+
+@login_required
+def evaluate_student(request, internship_id):
+    internship = get_object_or_404(Internship, id=internship_id)
+
+    if (
+        not hasattr(request.user, "supervisor_profile")
+        or internship.supervisor != request.user.supervisor_profile
+    ):
+        messages.error(request, "You are not authorized to evaluate this student.")
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = EvaluationForm(request.POST)
+        if form.is_valid():
+            evaluation = form.save(commit=False)
+            evaluation.internship = internship
+            evaluation.evaluator = request.user
+            evaluation.evaluator_role = "supervisor"
+            evaluation.save()
+
+            messages.success(
+                request,
+                f"Evaluation submitted for {internship.student.user.first_name}.",
+            )
+            return redirect("dashboard")
+
+    else:
+        form = EvaluationForm()
+
+    return render(
+        request, "app/evaluate_student.html", {"form": form, "internship": internship}
+    )

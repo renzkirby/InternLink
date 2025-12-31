@@ -59,4 +59,33 @@
     </div>
   </div>
 </div>
+
+<div class="card shadow mt-4">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">My Interns</h5>
+  </div>
+  <div class="card-body">
+    {% if my_internships %}
+    <ul class="list-group">
+      {% for intern in my_internships %}
+      <li
+        class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ intern.student.user.get_full_name }}</strong>
+          <br />
+          <small class="text-muted">{{ intern.course }}</small>
+        </div>
+        <a
+          href="{% url 'evaluate_student' intern.id %}"
+          class="btn btn-sm btn-outline-primary">
+          Evaluate
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No active interns assigned.</p>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
