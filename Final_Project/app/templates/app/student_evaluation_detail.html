@@ -1,0 +1,110 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">My Performance Evaluation</h4>
+                    <span class="badge bg-light text-dark">Final Grade</span>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <strong>Evaluated By:</strong> {{ evaluation.evaluator.get_full_name }}<br>
+                            <small class="text-muted">{{ evaluation.evaluator_role|title }}</small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Date:</strong> {{ evaluation.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th style="width: 40%; text-align: left;">Criteria</th>
+                                    <th style="width: 12%;">1<br><small>Poor</small></th>
+                                    <th style="width: 12%;">2<br><small>Fair</small></th>
+                                    <th style="width: 12%;">3<br><small>Good</small></th>
+                                    <th style="width: 12%;">4<br><small>Very Good</small></th>
+                                    <th style="width: 12%;">5<br><small>Excellent</small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Punctuality</td>
+                                    {% for i in "12345" %}
+                                        <td class="text-center {% if evaluation.punctuality|stringformat:"i" == i %}table-success{% endif %}">
+                                            {% if evaluation.punctuality|stringformat:"i" == i %}
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Quality of Work</td>
+                                    {% for i in "12345" %}
+                                        <td class="text-center {% if evaluation.work_quality|stringformat:"i" == i %}table-success{% endif %}">
+                                            {% if evaluation.work_quality|stringformat:"i" == i %}
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Communication</td>
+                                    {% for i in "12345" %}
+                                        <td class="text-center {% if evaluation.communication|stringformat:"i" == i %}table-success{% endif %}">
+                                            {% if evaluation.communication|stringformat:"i" == i %}
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                
+                                <tr>
+                                    <td class="fw-bold">Teamwork</td>
+                                    {% for i in "12345" %}
+                                        <td class="text-center {% if evaluation.teamwork|stringformat:"i" == i %}table-success{% endif %}">
+                                            {% if evaluation.teamwork|stringformat:"i" == i %}
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+
+                                <tr>
+                                    <td class="fw-bold">Initiative</td>
+                                    {% for i in "12345" %}
+                                        <td class="text-center {% if evaluation.initiative|stringformat:"i" == i %}table-success{% endif %}">
+                                            {% if evaluation.initiative|stringformat:"i" == i %}
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded border">
+                        <h5 class="text-secondary">Supervisor Comments</h5>
+                        <p class="fst-italic mb-0">"{{ evaluation.comments }}"</p>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

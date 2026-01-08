@@ -41,6 +41,7 @@ def dashboard_view(request):
         required_hours = 600
         completion_percent = 0
         documents_count = 0
+        has_evaluation = False
 
         if active_internship:
             documents_count = active_internship.student_reports.count()
@@ -54,6 +55,9 @@ def dashboard_view(request):
                 completion_percent = (total_hours / required_hours) * 100
 
             recent_logs = active_internship.daily_logs.order_by("-date")[:5]
+            has_evaluation = Evaluation.objects.filter(
+                internship=active_internship
+            ).exists()
 
         context = {
             "profile": student_profile,
@@ -63,6 +67,7 @@ def dashboard_view(request):
             "completion_percent": round(completion_percent, 1),
             "recent_logs": recent_logs,
             "documents_uploaded": documents_count,
+            "has_evaluation": has_evaluation,
         }
 
         return render(request, "app/student_dashboard.html", context)
@@ -285,3 +290,34 @@ def generate_dtr_pdf(request, internship_id):
     }
 
     return render_to_pdf("app/pdf/dtr_template.html", context)
+
+
+@login_required
+def student_evaluation_detail(request):
+    if request.user.role != User.Role.STUDENT:
+        return redirect("dashboard")
+
+    internship = Internship.objects.filter(
+        student=request.user.student_profile, status="ongoing"
+    ).first()
+
+    if not internship:
+        messages.error(request, "No active internship found.")
+        return redirect("dashboard")
+
+    evaluation = Evaluation.objects.filter(internship=internship).first()
+
+    if not evaluation:
+        messages.warning(
+            request, "Your supervisor has not submitted an evaluation yet."
+        )
+        return redirect("dashboard")
+
+    return render(
+        request,
+        "app/student_evaluation_detail.html",
+        {
+            "evaluation": evaluation,
+            "internship": internship,
+        },
+    )

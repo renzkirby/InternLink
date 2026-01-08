@@ -32,4 +32,9 @@ urlpatterns = [
         views.generate_dtr_pdf,
         name="generate_dtr_pdf",
     ),
+    path(
+        "my-evaluation/",
+        views.student_evaluation_detail,
+        name="student_evaluation_detail",
+    ),
 ]
