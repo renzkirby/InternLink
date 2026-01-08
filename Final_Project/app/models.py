@@ -118,6 +118,10 @@ class Internship(models.Model):
     def __str__(self):
         return f"{self.student.user.get_full_name()} @ {self.company.name}"
 
+    @property
+    def has_evaluation(self):
+        return Evaluation.objects.filter(internship=self).exists()
+
 
 class DailyLog(models.Model):
     internship = models.ForeignKey(

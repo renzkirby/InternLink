@@ -181,6 +181,12 @@ def evaluate_student(request, internship_id):
         messages.error(request, "You are not authorized to evaluate this student.")
         return redirect("dashboard")
 
+    if Evaluation.objects.filter(internship=internship).exists():
+        messages.warning(
+            request, "You have already submitted an evaluation for this student."
+        )
+        return redirect("dashboard")
+
     if request.method == "POST":
         form = EvaluationForm(request.POST)
         if form.is_valid():
