@@ -233,3 +233,28 @@ def upload_document(request):
         "app/upload_document.html",
         {"form": form, "existing_reports": existing_reports},
     )
+
+
+@login_required
+def coordinator_student_detail(request, internship_id):
+    if request.user.role != User.Role.COORDINATOR:
+        messages.error(request, "Access Denied.")
+        return redirect("dashboard")
+
+    internship = get_object_or_404(Internship, id=internship_id)
+
+    documents = internship.student_reports.all().order_by("-submitted_at")
+    recent_logs = internship.daily_logs.all().order_by("-date")[:10]
+    total_hours = internship.daily_logs.filter(is_verified=True).aggregate(
+        Sum("hours_rendered")
+    )
+    approved_hours = total_hours["hours_rendered__sum"] or 0
+
+    context = {
+        "internship": internship,
+        "student": internship.student,
+        "documents": documents,
+        "recent_logs": recent_logs,
+        "approved_hours": approved_hours,
+    }
+    return render(request, "app/coordinator_student_detail.html", context)

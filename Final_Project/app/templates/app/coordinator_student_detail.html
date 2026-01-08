@@ -1,0 +1,114 @@
+{% extends 'app/base.html' %} {% block content %}
+<div class="container">
+  <div class="mb-4">
+    <a
+      href="{% url 'dashboard' %}"
+      class="text-decoration-none text-muted"
+      >&larr; Back to Dashboard</a
+    >
+    <h2 class="mt-2">{{ internship.student.user.get_full_name }}</h2>
+    <span class="badge bg-primary">{{ internship.course }}</span>
+    <span class="badge bg-secondary">{{ internship.company.name }}</span>
+  </div>
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="card shadow mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">Internship Progress</h5>
+        </div>
+        <div class="card-body text-center">
+          <h1 class="display-4">{{ approved_hours }}</h1>
+          <p class="text-muted">Approved Hours / {{ internship.required_hours }}</p>
+          <div
+            class="progress"
+            style="height: 10px">
+            <div
+              class="progress-bar bg-success"
+              role="progressbar"
+              style="width: {% widthratio approved_hours internship.required_hours 100 %}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow">
+        <div
+          class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Submitted Documents</h5>
+          <span class="badge bg-light text-dark">{{ documents.count }}</span>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for doc in documents %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ doc.get_report_type_display }}</strong>
+                <br />
+                <small class="text-muted">{{ doc.submitted_at|date:"M d, Y" }}</small>
+                {% if doc.week_number %}
+                <span class="badge bg-info text-dark">Week {{ doc.week_number }}</span>
+                {% endif %}
+              </div>
+              <a
+                href="{{ doc.file.url }}"
+                target="_blank"
+                class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-download"></i> View
+              </a>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted text-center py-4">No documents uploaded yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card shadow">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Recent Daily Logs</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>In</th>
+                <th>Out</th>
+                <th>Hrs</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in recent_logs %}
+              <tr>
+                <td>{{ log.date|date:"M d" }}</td>
+                <td>{{ log.time_in|time:"H:i" }}</td>
+                <td>{{ log.time_out|time:"H:i" }}</td>
+                <td>{{ log.hours_rendered }}</td>
+                <td>
+                  {% if log.is_verified %}
+                  <span class="badge bg-success">Verified</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td
+                  colspan="5"
+                  class="text-center p-4 text-muted">
+                  No logs recorded.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
