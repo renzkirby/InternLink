@@ -52,46 +52,6 @@
 
   <div class="row">
     <div class="col-md-4">
-      <div class="card text-white bg-primary mb-3 shadow">
-        <div class="card-header">Internship Status</div>
-        <div class="card-body">
-          {% if internship %}
-          <h5 class="card-title">{{ internship.company.name }}</h5>
-          <p class="card-text badge bg-warning text-dark">{{ internship.get_status_display }}</p>
-          {% else %}
-          <h5 class="card-title">Not Started</h5>
-          <p class="card-text">You are not currently linked to a company.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card text-white bg-success mb-3 shadow">
-        <div class="card-header">Total Hours</div>
-        <div class="card-body">
-          <h3 class="card-title">
-            {{ total_hours }} <span class="fs-6">/ {{ required_hours }}</span>
-          </h3>
-          <p class="card-text mb-1">Approved Hours</p>
-
-          <div
-            class="progress mt-2"
-            style="height: 5px">
-            <div
-              class="progress-bar bg-alert"
-              role="progressbar"
-              style="width: {{ completion_percent }}%;"
-              aria-valuenow="{{ completion_percent }}"
-              aria-valuemin="0"
-              aria-valuemax="100"></div>
-          </div>
-          <small>{{ completion_percent }}% Completed</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
       <div class="card bg-light mb-3 shadow">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span>Recent Activities</span>
@@ -136,6 +96,45 @@
           </div>
           {% else %}
           <div class="p-3 text-muted text-center">No logs found yet. Start your journey!</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3 shadow">
+        <div class="card-header">Total Hours</div>
+        <div class="card-body">
+          <h3 class="card-title">
+            {{ total_hours }} <span class="fs-6">/ {{ required_hours }}</span>
+          </h3>
+          <p class="card-text mb-1">Approved Hours</p>
+
+          <div
+            class="progress mt-2"
+            style="height: 5px">
+            <div
+              class="progress-bar bg-alert"
+              role="progressbar"
+              style="width: {{ completion_percent }}%;"
+              aria-valuenow="{{ completion_percent }}"
+              aria-valuemin="0"
+              aria-valuemax="100"></div>
+          </div>
+          <small>{{ completion_percent }}% Completed</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3 shadow">
+        <div class="card-header">Internship Status</div>
+        <div class="card-body">
+          {% if internship %}
+          <h5 class="card-title">{{ internship.company.name }}</h5>
+          <p class="card-text badge bg-warning text-dark">{{ internship.get_status_display }}</p>
+          {% else %}
+          <h5 class="card-title">Not Started</h5>
+          <p class="card-text">You are not currently linked to a company.</p>
           {% endif %}
         </div>
       </div>
