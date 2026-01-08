@@ -1,12 +1,13 @@
+from datetime import datetime, timedelta, date
+from decimal import Decimal, ROUND_HALF_UP
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import TemplateView
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.db.models import Sum
-from .forms import *
 from .models import *
-
+from .forms import *
+from .utils import render_to_pdf
 
 # Create your views here.
 
@@ -258,3 +259,29 @@ def coordinator_student_detail(request, internship_id):
         "approved_hours": approved_hours,
     }
     return render(request, "app/coordinator_student_detail.html", context)
+
+
+@login_required
+def generate_dtr_pdf(request, internship_id):
+    internship = get_object_or_404(Internship, id=internship_id)
+
+    if (
+        request.user != internship.student.user
+        and request.user.role != User.Role.COORDINATOR
+        and request.user.role != User.Role.SUPERVISOR
+    ):
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
+    logs = internship.daily_logs.filter(is_verified=True).order_by("date")
+    total_data = logs.aggregate(Sum("hours_rendered"))
+    total_hours = total_data["hours_rendered__sum"] or 0
+
+    context = {
+        "internship": internship,
+        "logs": logs,
+        "total_hours": total_hours,
+        "generated_at": datetime.now(),
+    }
+
+    return render_to_pdf("app/pdf/dtr_template.html", context)

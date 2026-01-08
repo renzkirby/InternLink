@@ -121,6 +121,14 @@
               aria-valuemax="100"></div>
           </div>
           <small>{{ completion_percent }}% Completed</small>
+          <div class="mt-3">
+            <a
+              href="{% url 'generate_dtr_pdf' internship.id %}"
+              target="_blank"
+              class="btn btn-primary w-100">
+              <i class="bi bi-file-pdf"></i> Download Official DTR
+            </a>
+          </div>
         </div>
       </div>
     </div>

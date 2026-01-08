@@ -27,4 +27,9 @@ urlpatterns = [
         views.coordinator_student_detail,
         name="coordinator_student_detail",
     ),
+    path(
+        "export/dtr/<int:internship_id>/",
+        views.generate_dtr_pdf,
+        name="generate_dtr_pdf",
+    ),
 ]
