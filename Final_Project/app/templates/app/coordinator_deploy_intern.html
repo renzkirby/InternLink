@@ -1,0 +1,46 @@
+{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Deploy New Intern</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+
+            <h5 class="text-secondary mb-3">Student Information</h5>
+            <div class="mb-3">{{ form.student|as_crispy_field }}</div>
+
+            <hr />
+
+            <h5 class="text-secondary mb-3">Placement Details</h5>
+            <div class="row">
+              <div class="col-md-6">{{ form.company|as_crispy_field }}</div>
+              <div class="col-md-6">{{ form.supervisor|as_crispy_field }}</div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">{{ form.required_hours|as_crispy_field }}</div>
+              <div class="col-md-6">{{ form.start_date|as_crispy_field }}</div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg">
+                Deploy Intern
+              </button>
+              <a
+                href="{% url 'dashboard' %}"
+                class="btn btn-outline-secondary"
+                >Cancel</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

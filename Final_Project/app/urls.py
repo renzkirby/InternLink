@@ -37,4 +37,9 @@ urlpatterns = [
         views.student_evaluation_detail,
         name="student_evaluation_detail",
     ),
+    path(
+        "coordinator/deploy/",
+        views.coordinator_deploy_intern,
+        name="coordinator_deploy_intern",
+    ),
 ]

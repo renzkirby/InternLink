@@ -147,6 +147,7 @@ def add_daily_log(request):
             log.internship = active_internship
             log.save()
             messages.success(request, "Time log submitted successfully!")
+            return redirect("dashboard")
     else:
         form = DailyLogForm()
 
@@ -327,3 +328,36 @@ def student_evaluation_detail(request):
             "internship": internship,
         },
     )
+
+
+@login_required
+def coordinator_deploy_intern(request):
+    if request.user.role != User.Role.COORDINATOR:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = InternshipDeploymentForm(request.POST)
+        if form.is_valid():
+            internship = form.save(commit=False)
+            internship.status = "ongoing"
+
+            estimated_days = int(internship.required_hours / 8) + 20
+
+            if internship.start_date:
+                internship.end_date = internship.start_date + timedelta(
+                    days=estimated_days
+                )
+            else:
+                internship.end_date = datetime.now().date() + timedelta(days=90)
+
+            internship.save()
+
+            messages.success(
+                request,
+                f"Successfully deployed {internship.student.user.get_full_name()}!",
+            )
+            return redirect("dashboard")
+    else:
+        form = InternshipDeploymentForm()
+
+    return render(request, "app/coordinator_deploy_intern.html", {"form": form})

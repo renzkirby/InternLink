@@ -1,6 +1,15 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, StudentProfile, DailyLog, Evaluation, StudentReport
+from .models import (
+    User,
+    StudentProfile,
+    DailyLog,
+    Evaluation,
+    StudentReport,
+    Internship,
+    SupervisorProfile,
+    Company,
+)
 
 
 class StudentRegistrationForm(UserCreationForm):
@@ -121,3 +130,50 @@ class StudentReportForm(forms.ModelForm):
             ),
             "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
+
+
+class InternshipDeploymentForm(forms.ModelForm):
+    student = forms.ModelChoiceField(
+        queryset=StudentProfile.objects.all(),
+        label="Select Student",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    supervisor = forms.ModelChoiceField(
+        queryset=SupervisorProfile.objects.all(),
+        label="Select Supervisor",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        label="Select Company",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    class Meta:
+        model = Internship
+        fields = [
+            "student",
+            "supervisor",
+            "company",
+            "required_hours",
+            "start_date",
+        ]
+
+        widgets = {
+            "company": forms.Select(attrs={"class": "form-select"}),
+            "course": forms.TextInput(attrs={"class": "form-control"}),
+            "required_hours": forms.NumberInput(
+                attrs={"class": "form-control", "value": 600}
+            ),
+            "start_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}
+            ),
+        }
+
+    def clean_student(self):
+        student = self.cleaned_data.get("student")
+        if Internship.objects.filter(student=student, status="ongoing").exists():
+            raise forms.ValidationError(
+                "This student already has an active internship."
+            )
+        return student
