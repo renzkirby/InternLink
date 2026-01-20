@@ -29,6 +29,9 @@ class StudentProfile(models.Model):
     course = models.CharField(max_length=100, null=True, blank=True)
     year_level = models.IntegerField(null=True, blank=True)
     contact_number = models.CharField(max_length=20, null=True, blank=True)
+    school = models.CharField(
+        max_length=100, default="Cavite State University - Bacoor Campus"
+    )
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.student_number}"
@@ -71,6 +74,9 @@ class Company(models.Model):
     contact_person = models.CharField(max_length=255, blank=True, null=True)
     contact_email = models.EmailField(blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
+    school = models.CharField(
+        max_length=100, default="Cavite State University - Bacoor Campus"
+    )
 
     def __str__(self):
         return self.name

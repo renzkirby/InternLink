@@ -43,4 +43,45 @@
     </div>
   </div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const companySelect = document.getElementById("id_company");
+    const supervisorSelect = document.getElementById("id_supervisor");
+
+    if (!companySelect.value) {
+      supervisorSelect.innerHTML = '<option value="">---------</option>';
+      supervisorSelect.disabled = true;
+    }
+
+    companySelect.addEventListener("change", function () {
+      const companyId = this.value;
+
+      supervisorSelect.innerHTML = '<option value="">Loading...</option>';
+      supervisorSelect.disabled = true;
+
+      if (companyId) {
+        fetch(`/ajax/get-supervisors/?company_id=${companyId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            supervisorSelect.innerHTML = '<option value="">---------</option>';
+            supervisorSelect.disabled = false;
+
+            data.forEach((supervisor) => {
+              const option = document.createElement("option");
+              option.value = supervisor.id;
+              option.textContent = supervisor.name;
+              supervisorSelect.appendChild(option);
+            });
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            supervisorSelect.innerHTML = '<option value="">Error loading supervisors</option>';
+          });
+      } else {
+        supervisorSelect.innerHTML = '<option value="">---------</option>';
+        supervisorSelect.disabled = true;
+      }
+    });
+  });
+</script>
 {% endblock %}

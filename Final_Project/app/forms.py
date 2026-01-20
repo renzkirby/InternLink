@@ -9,10 +9,11 @@ from .models import (
     Internship,
     SupervisorProfile,
     Company,
+    CoordinatorProfile,
 )
 
 
-class StudentRegistrationForm(UserCreationForm):
+class RegistrationForm(UserCreationForm):
     email = forms.EmailField(
         required=True, help_text="Required. Use a valid email address."
     )
@@ -38,14 +39,23 @@ class StudentProfileForm(forms.ModelForm):
 
     class Meta:
         model = StudentProfile
-        fields = ["student_number", "course", "year_level", "contact_number"]
+        fields = ["student_number", "school", "course", "year_level", "contact_number"]
 
         widgets = {
-            "student_number": forms.TextInput(attrs={"placeholder": "e.g. 2023-0001"}),
-            "course": forms.TextInput(
-                attrs={"placeholder": "e.g. BS Information Technology"}
+            "student_number": forms.TextInput(attrs={"class": "form-control"}),
+            "course": forms.TextInput(attrs={"class": "form-control"}),
+            "school": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "e.g. Main Campus"}
             ),
+            "contact_number": forms.TextInput(attrs={"class": "form-control"}),
         }
+
+
+class CoordinatorProfileForm(forms.ModelForm):
+    class Meta:
+        model = CoordinatorProfile
+        fields = ["school"]
+        widgets = {"school": forms.TextInput(attrs={"class": "form-control"})}
 
 
 class DailyLogForm(forms.ModelForm):
@@ -177,3 +187,67 @@ class InternshipDeploymentForm(forms.ModelForm):
                 "This student already has an active internship."
             )
         return student
+
+
+class CompanyForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = [
+            "name",
+            "address",
+            "contact_person",
+            "contact_number",
+            "contact_email",
+        ]
+
+        wdigets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "e.g. TechSolutions Inc.",
+                }
+            ),
+            "address": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "contact_person": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_number": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_mail": forms.EmailInput(attrs={"class": "form-control"}),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if Company.objects.filter(name__iexact=name).exists():
+            raise forms.ValidationError("This company already exists.")
+        return name
+
+
+class SupervisorProfileForm(forms.ModelForm):
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        empty_label="Select your Company",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+    class Meta:
+        model = SupervisorProfile
+        fields = ["company"]
+
+    def __init__(self, *args, **kwargs):
+        super(SupervisorProfileForm, self).__init__(*args, **kwargs)
+        self.fields["company"].label_from_instance = (
+            lambda obj: f"{obj.name} ({obj.school})"
+        )
+
+
+class CoordinatorProfileForm(forms.ModelForm):
+    class Meta:
+        model = CoordinatorProfile
+        fields = ["school"]
+
+        widgets = {
+            "school": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Cavite State University - Bacoor Campus",
+                }
+            ),
+        }

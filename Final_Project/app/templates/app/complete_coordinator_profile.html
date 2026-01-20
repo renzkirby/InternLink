@@ -1,0 +1,32 @@
+{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow border-primary">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Setup Coordinator Account</h4>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Please specify which campus or department you are managing.</p>
+
+          <form method="POST">
+            {% csrf_token %} {{ form|crispy }}
+
+            <div class="alert alert-info mt-3">
+              <i class="bi bi-info-circle"></i>
+              <strong>Note:</strong> You will only see students and companies registered under this
+              school name.
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary w-100 mt-3">
+              Complete Setup
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

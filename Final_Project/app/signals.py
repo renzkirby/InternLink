@@ -12,8 +12,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             print(f"Created StudentProfile for {instance.username}")
 
         elif instance.role == User.Role.COORDINATOR:
-            CoordinatorProfile.objects.create(user=instance)
-            print(f"Created CoordinatorProfile for {instance.username}")
+            pass
 
         elif instance.role == User.Role.SUPERVISOR:
             pass

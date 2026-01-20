@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.db.models import Sum
+from django.http import JsonResponse
 from .models import *
 from .forms import *
 from .utils import render_to_pdf
@@ -14,14 +15,14 @@ from .utils import render_to_pdf
 
 def register_view(request):
     if request.method == "POST":
-        form = StudentRegistrationForm(request.POST)
+        form = RegistrationForm(request.POST)
 
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect("dashboard")
     else:
-        form = StudentRegistrationForm()
+        form = RegistrationForm()
 
     return render(request, "app/register.html", {"form": form})
 
@@ -73,13 +74,24 @@ def dashboard_view(request):
         return render(request, "app/student_dashboard.html", context)
 
     elif user.role == User.Role.COORDINATOR:
-        total_students = StudentProfile.objects.count()
-        ongoing_internships = Internship.objects.filter(status="ongoing").count()
-        total_companies = Company.objects.count()
+        if not hasattr(user, "coordinator_profile"):
+            return redirect("complete_coordinator_profile")
+
+        coordinator_profile = user.coordinator_profile
+
+        current_school = coordinator_profile.school
+
+        total_students = StudentProfile.objects.filter(school=current_school).count()
+
+        ongoing_internships = Internship.objects.filter(
+            status="ongoing", student__school=current_school
+        ).count()
+
+        total_companies = Company.objects.filter(school=current_school).count()
 
         recent_deployments = (
             Internship.objects.select_related("student__user", "company")
-            .all()
+            .filter(student__school=current_school)
             .order_by("-start_date")
         )
 
@@ -88,11 +100,15 @@ def dashboard_view(request):
             "ongoing_internships": ongoing_internships,
             "total_companies": total_companies,
             "deployments": recent_deployments,
+            "current_school": current_school,
         }
 
         return render(request, "app/coordinator_dahsboard.html", context)
 
     elif user.role == User.Role.SUPERVISOR:
+        if not hasattr(user, "supervisor_profile"):
+            return redirect("complete_supervisor_profile")
+
         supervisor_profile = user.supervisor_profile
 
         pending_logs = DailyLog.objects.filter(
@@ -128,6 +144,25 @@ def student_profile_update(request):
         form = StudentProfileForm(instance=profile)
 
     return render(request, "app/student_profile_update.html", {"form": form})
+
+
+@login_required
+def complete_coordinator_profile(request):
+    if hasattr(request.user, "coordinator_profile"):
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = CoordinatorProfileForm(request.POST)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            messages.success(request, "Coordinator profile set up!")
+            return redirect("dashboard")
+    else:
+        form = CoordinatorProfileForm()
+
+    return render(request, "app/complete_coordinator_profile.html", {"form": form})
 
 
 @login_required
@@ -185,6 +220,15 @@ def evaluate_student(request, internship_id):
     if Evaluation.objects.filter(internship=internship).exists():
         messages.warning(
             request, "You have already submitted an evaluation for this student."
+        )
+        return redirect("dashboard")
+
+    supervisor_school = request.user.supervisor_profile.company.school
+    student_school = internship.student.school
+
+    if supervisor_school != student_school:
+        messages.error(
+            request, "Access Denied: This student belongs to a different school."
         )
         return redirect("dashboard")
 
@@ -335,14 +379,25 @@ def coordinator_deploy_intern(request):
     if request.user.role != User.Role.COORDINATOR:
         return redirect("dashboard")
 
+    try:
+        my_school = request.user.coordinator_profile.school
+    except AttributeError:
+        return redirect("complete_coordinator_profile")
+
     if request.method == "POST":
         form = InternshipDeploymentForm(request.POST)
         if form.is_valid():
+            student = form.cleaned_data["student"]
+            if student.school != my_school:
+                messages.error(
+                    request, "You cannot deploy a student from another school."
+                )
+                return redirect("dashboard")
+
             internship = form.save(commit=False)
             internship.status = "ongoing"
 
             estimated_days = int(internship.required_hours / 8) + 20
-
             if internship.start_date:
                 internship.end_date = internship.start_date + timedelta(
                     days=estimated_days
@@ -360,4 +415,97 @@ def coordinator_deploy_intern(request):
     else:
         form = InternshipDeploymentForm()
 
+        busy_student_ids = Internship.objects.filter(status="ongoing").values_list(
+            "student_id", flat=True
+        )
+
+        form.fields["student"].queryset = StudentProfile.objects.filter(
+            school=my_school
+        ).exclude(id__in=busy_student_ids)
+
+        form.fields["company"].queryset = Company.objects.filter(school=my_school)
+
     return render(request, "app/coordinator_deploy_intern.html", {"form": form})
+
+
+@login_required
+def coordinator_add_company(request):
+    if request.user.role != User.Role.COORDINATOR:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = CompanyForm(request.POST)
+        if form.is_valid():
+            company = form.save(commit=False)
+            company.school = request.user.coordinator_profile.school
+            company.save()
+            messages.success(request, f"Successfully added {company.name}!")
+            return redirect("dashboard")
+    else:
+        form = CompanyForm()
+
+    return render(request, "app/coordinator_add_company.html", {"form": form})
+
+
+@login_required
+def complete_supervisor_profile(request):
+    if hasattr(request.user, "supervisor_profile"):
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = SupervisorProfileForm(request.POST)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            messages.success(request, "Profile completed successfully!")
+            return redirect("dashboard")
+    else:
+        form = SupervisorProfileForm()
+
+    return render(request, "app/complete_supervisor_profile.html", {"form": form})
+
+
+@login_required
+def complete_coordinator_profile(request):
+    if hasattr(request.user, "coordinator_profile"):
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = CoordinatorProfileForm(request.POST)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+
+            messages.success(request, f"Welcome to {profile.school}!")
+            return redirect("dashboard")
+    else:
+        form = CoordinatorProfileForm()
+
+    return render(request, "app/complete_coordinator_profile.html", {"form": form})
+
+
+@login_required
+def get_supervisors_for_company(request):
+    company_id = request.GET.get("company_id")
+
+    if not company_id:
+        return JsonResponse([], safe=False)
+
+    try:
+        my_school = request.user.coordinator_profile.school
+    except:
+        return JsonResponse([], safe=False)
+
+    supervisors = SupervisorProfile.objects.filter(
+        company_id=company_id, company__school=my_school
+    ).select_related("user")
+
+    data = []
+    for s in supervisors:
+        data.append(
+            {"id": s.id, "name": f"{s.user.get_full_name()} ({s.company.name})"}
+        )
+
+    return JsonResponse(data, safe=False)

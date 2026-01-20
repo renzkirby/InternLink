@@ -42,4 +42,29 @@ urlpatterns = [
         views.coordinator_deploy_intern,
         name="coordinator_deploy_intern",
     ),
+    path(
+        "coordinator/company/add/",
+        views.coordinator_add_company,
+        name="coordinator_add_company",
+    ),
+    path(
+        "supervisor/setup/",
+        views.complete_supervisor_profile,
+        name="complete_supervisor_profile",
+    ),
+    path(
+        "coordinator/setup/",
+        views.complete_coordinator_profile,
+        name="complete_coordinator_profile",
+    ),
+    path(
+        "coordinator/setup/",
+        views.complete_coordinator_profile,
+        name="complete_coordinator_profile",
+    ),
+    path(
+        "ajax/get-supervisors/",
+        views.get_supervisors_for_company,
+        name="get_supervisors",
+    ),
 ]
