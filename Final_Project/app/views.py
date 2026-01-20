@@ -433,16 +433,21 @@ def coordinator_add_company(request):
     if request.user.role != User.Role.COORDINATOR:
         return redirect("dashboard")
 
+    try:
+        my_school = request.user.coordinator_profile.school
+    except AttributeError:
+        return redirect("complete_coordinator_profile")
+
     if request.method == "POST":
-        form = CompanyForm(request.POST)
+        form = CompanyForm(request.POST, school=my_school)
         if form.is_valid():
             company = form.save(commit=False)
-            company.school = request.user.coordinator_profile.school
+            company.school = my_school
             company.save()
             messages.success(request, f"Successfully added {company.name}!")
             return redirect("dashboard")
     else:
-        form = CompanyForm()
+        form = CompanyForm(school=my_school)
 
     return render(request, "app/coordinator_add_company.html", {"form": form})
 

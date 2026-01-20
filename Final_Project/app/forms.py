@@ -199,8 +199,7 @@ class CompanyForm(forms.ModelForm):
             "contact_number",
             "contact_email",
         ]
-
-        wdigets = {
+        widgets = {
             "name": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -210,13 +209,24 @@ class CompanyForm(forms.ModelForm):
             "address": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
             "contact_person": forms.TextInput(attrs={"class": "form-control"}),
             "contact_number": forms.TextInput(attrs={"class": "form-control"}),
-            "contact_mail": forms.EmailInput(attrs={"class": "form-control"}),
+            "contact_email": forms.EmailInput(attrs={"class": "form-control"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.school = kwargs.pop("school", None)
+        super(CompanyForm, self).__init__(*args, **kwargs)
 
     def clean_name(self):
         name = self.cleaned_data.get("name")
-        if Company.objects.filter(name__iexact=name).exists():
-            raise forms.ValidationError("This company already exists.")
+
+        if (
+            self.school
+            and Company.objects.filter(name__iexact=name, school=self.school).exists()
+        ):
+            raise forms.ValidationError(
+                f"{name} is already a partner of {self.school}."
+            )
+
         return name
 
 
