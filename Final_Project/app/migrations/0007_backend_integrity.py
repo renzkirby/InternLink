@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="internship",
             constraint=models.UniqueConstraint(
-                condition=Q(("status", "ongoing")),
+                condition=Q(status="ongoing"),
                 fields=("student",),
                 name="unique_ongoing_internship_per_student",
             ),
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="internship",
             constraint=models.CheckConstraint(
-                condition=Q(("required_hours__gt", 0)),
+                condition=Q(required_hours__gt=0),
                 name="internship_required_hours_positive",
             ),
         ),
@@ -39,7 +39,10 @@ class Migration(migrations.Migration):
             model_name="evaluation",
             name="evaluator_role",
             field=models.CharField(
-                choices=[("supervisor", "Supervisor"), ("coordinator", "Coordinator")],
+                choices=[
+                    ("supervisor", "Supervisor"),
+                    ("coordinator", "Coordinator"),
+                ],
                 max_length=20,
             ),
         ),

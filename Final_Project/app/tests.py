@@ -1,13 +1,13 @@
 from datetime import date, time, timedelta
 
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 
 from .models import (
     Company,
     DailyLog,
+    Evaluation,
     Internship,
     StudentProfile,
     SupervisorProfile,
@@ -56,15 +56,14 @@ class BackendIntegrityTests(TestCase):
                 "last_name": "User",
                 "password1": "AnotherStrongPass123!",
                 "password2": "AnotherStrongPass123!",
+                "role": User.Role.COORDINATOR,
             },
         )
 
         self.assertEqual(response.status_code, 302)
         user = User.objects.get(username="newuser")
         self.assertEqual(user.role, User.Role.STUDENT)
-        self.assertTrue(
-            StudentProfile.objects.filter(user=user).exists()
-        )
+        self.assertTrue(StudentProfile.objects.filter(user=user).exists())
 
     def test_internship_rejects_cross_school_company(self):
         self.company.school = "Another School"
@@ -113,6 +112,28 @@ class BackendIntegrityTests(TestCase):
         with self.assertRaises(ValidationError):
             duplicate.full_clean()
 
+    def test_daily_log_rejects_future_date(self):
+        internship = Internship.objects.create(
+            student=self.student,
+            company=self.company,
+            supervisor=self.supervisor,
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=30),
+            required_hours=600,
+            status="ongoing",
+        )
+
+        log = DailyLog(
+            internship=internship,
+            date=date.today() + timedelta(days=1),
+            time_in=time(8, 0),
+            time_out=time(17, 0),
+            work_description="Future work.",
+        )
+
+        with self.assertRaises(ValidationError):
+            log.full_clean()
+
     def test_approve_log_requires_post(self):
         internship = Internship.objects.create(
             student=self.student,
@@ -133,6 +154,7 @@ class BackendIntegrityTests(TestCase):
 
         self.client.login(
             username="supervisor1",
+            email="auth-supervisor@example.com",
             password="StrongPass123!",
         )
         response = self.client.get(reverse("approve_log", args=[log.id]))
@@ -147,11 +169,13 @@ class AuthorizationTests(TestCase):
     def setUpTestData(cls):
         cls.student_user = User.objects.create_user(
             username="student1",
+            email="auth-student@example.com",
             password="StrongPass123!",
             role=User.Role.STUDENT,
         )
         cls.other_student_user = User.objects.create_user(
             username="student2",
+            email="auth-student2@example.com",
             password="StrongPass123!",
             role=User.Role.STUDENT,
         )
@@ -191,6 +215,23 @@ class AuthorizationTests(TestCase):
         )
         response = self.client.get(
             reverse("generate_dtr_pdf", args=[self.internship.id])
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+
+    def test_student_cannot_download_another_students_document(self):
+        report = self.internship.student_reports.create(
+            report_type="resume",
+            title="Student Resume",
+            file="reports/test/resume/sample.pdf",
+        )
+
+        self.client.login(
+            username="student2",
+            password="StrongPass123!",
+        )
+        response = self.client.get(
+            reverse("document_download", args=[report.id])
         )
 
         self.assertRedirects(response, reverse("dashboard"))
