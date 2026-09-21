@@ -36,7 +36,30 @@
         <div class="supervisor-detail-card-heading"><div><div class="card-eyebrow">DAILY LOG ACTIVITY</div><h2>Recent logs</h2><p>Review submitted work and approval status.</p></div></div>
         {% if recent_logs %}
         <div class="supervisor-detail-table-wrap"><table class="table app-table align-middle mb-0"><thead><tr><th>Date</th><th>Hours</th><th>Work summary</th><th>Status</th><th></th></tr></thead><tbody>
-        {% for log in recent_logs %}<tr><td>{{ log.date|date:"M d, Y" }}</td><td><strong>{{ log.hours_rendered|floatformat:1 }}</strong></td><td class="supervisor-detail-task">{{ log.work_description|truncatechars:72 }}</td><td>{% if log.is_verified %}<span class="status-pill supervisor-detail-approved"><i class="bi bi-circle-fill"></i> Approved</span>{% else %}<span class="status-pill supervisor-detail-pending"><i class="bi bi-circle-fill"></i> Pending</span>{% endif %}</td><td class="text-end">{% if not log.is_verified %}<form method="post" action="{% url 'approve_log' log.id %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn supervisor-detail-approve">Approve</button></form>{% endif %}</td></tr>{% endfor %}
+        {% for log in recent_logs %}<tr><td>{{ log.date|date:"M d, Y" }}</td><td><strong>{{ log.hours_rendered|floatformat:1 }}</strong></td><td class="supervisor-detail-task">{{ log.work_description|truncatechars:72 }}</td><td>
+{% if log.review_status == "approved" %}
+<span class="status-pill supervisor-detail-approved"><i class="bi bi-circle-fill"></i> Approved</span>
+{% elif log.review_status == "revision_requested" %}
+<span class="status-pill supervisor-detail-pending"><i class="bi bi-circle-fill"></i> Needs correction</span>
+{% else %}
+<span class="status-pill supervisor-detail-pending"><i class="bi bi-circle-fill"></i> Pending</span>
+{% endif %}
+</td>
+<td class="text-end">
+{% if log.review_status != "approved" %}
+<div class="supervisor-log-actions">
+<form method="post" action="{% url 'approve_log' log.id %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn supervisor-detail-approve">Approve</button></form>
+<details class="supervisor-revision-details">
+<summary class="btn supervisor-detail-return">Return</summary>
+<form method="post" action="{% url 'request_log_revision' log.id %}" class="supervisor-revision-form">
+{% csrf_token %}
+<textarea name="remarks" rows="3" required placeholder="Explain what needs correction..."></textarea>
+<button type="submit" class="btn supervisor-detail-return-confirm">Return for correction</button>
+</form>
+</details>
+</div>
+{% endif %}
+</td></tr>{% endfor %}
         </tbody></table></div>
         {% else %}<div class="supervisor-detail-empty"><i class="bi bi-clock-history"></i><strong>No daily logs yet</strong><p>The student has not submitted any daily logs.</p></div>{% endif %}
       </section>
