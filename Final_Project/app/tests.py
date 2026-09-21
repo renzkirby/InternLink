@@ -154,6 +154,7 @@ class BackendIntegrityTests(TestCase):
 
         self.client.login(
             username="supervisor1",
+            email="auth-supervisor@example.com",
             password="StrongPass123!",
         )
         response = self.client.get(reverse("approve_log", args=[log.id]))
@@ -168,11 +169,13 @@ class AuthorizationTests(TestCase):
     def setUpTestData(cls):
         cls.student_user = User.objects.create_user(
             username="student1",
+            email="auth-student@example.com",
             password="StrongPass123!",
             role=User.Role.STUDENT,
         )
         cls.other_student_user = User.objects.create_user(
             username="student2",
+            email="auth-student2@example.com",
             password="StrongPass123!",
             role=User.Role.STUDENT,
         )
