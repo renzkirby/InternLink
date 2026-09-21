@@ -1,0 +1,65 @@
+{% extends 'app/base.html' %}
+{% block title %}Intern Review | InternLink{% endblock %}
+{% block content %}
+<div class="supervisor-detail">
+  <div class="supervisor-detail-header">
+    <div>
+      <a href="{% url 'dashboard' %}" class="supervisor-detail-back"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+      <div class="supervisor-detail-eyebrow">INTERN REVIEW</div>
+      <h1>{{ student.user.get_full_name }}</h1>
+      <p>{{ student.course|default:"Course not set" }} · {{ internship.company.name }}</p>
+    </div>
+    <div class="supervisor-detail-actions">
+      <a href="{% url 'generate_dtr_pdf' internship.id %}" class="btn supervisor-dtr-btn"><i class="bi bi-file-earmark-pdf me-1"></i> DTR</a>
+      {% if not supervisor_evaluation %}<a href="{% url 'evaluate_student' internship.id %}" class="btn supervisor-evaluate-btn"><i class="bi bi-star me-1"></i> Evaluate</a>{% endif %}
+    </div>
+  </div>
+
+  <div class="supervisor-detail-grid">
+    <main>
+      <section class="il-card supervisor-detail-card">
+        <div class="supervisor-detail-card-heading"><div><div class="card-eyebrow">INTERNSHIP PROGRESS</div><h2>Placement overview</h2></div><span class="status-pill supervisor-detail-status">{{ internship.get_status_display }}</span></div>
+        <div class="supervisor-detail-progress">
+          <div class="supervisor-detail-progress-top"><strong>{{ approved_hours|floatformat:1 }} / {{ internship.required_hours }} hours</strong><span>{{ progress_percent|floatformat:1 }}%</span></div>
+          <div class="progress supervisor-detail-progress-bar"><div class="progress-bar" style="width: {{ progress_percent }}%"></div></div>
+          <div class="supervisor-detail-progress-note">{% if pending_logs_count %}{{ pending_logs_count }} log{{ pending_logs_count|pluralize }} awaiting approval{% else %}All submitted logs are approved{% endif %}</div>
+        </div>
+        <div class="supervisor-detail-meta-grid">
+          <div><span>Company</span><strong>{{ internship.company.name }}</strong></div>
+          <div><span>Supervisor</span><strong>{{ internship.supervisor.user.get_full_name|default:"Not assigned" }}</strong></div>
+          <div><span>Start date</span><strong>{{ internship.start_date|date:"M d, Y" }}</strong></div>
+          <div><span>End date</span><strong>{{ internship.end_date|date:"M d, Y" }}</strong></div>
+        </div>
+      </section>
+
+      <section class="il-card supervisor-detail-card">
+        <div class="supervisor-detail-card-heading"><div><div class="card-eyebrow">DAILY LOG ACTIVITY</div><h2>Recent logs</h2><p>Review submitted work and approval status.</p></div></div>
+        {% if recent_logs %}
+        <div class="supervisor-detail-table-wrap"><table class="table app-table align-middle mb-0"><thead><tr><th>Date</th><th>Hours</th><th>Work summary</th><th>Status</th><th></th></tr></thead><tbody>
+        {% for log in recent_logs %}<tr><td>{{ log.date|date:"M d, Y" }}</td><td><strong>{{ log.hours_rendered|floatformat:1 }}</strong></td><td class="supervisor-detail-task">{{ log.work_description|truncatechars:72 }}</td><td>{% if log.is_verified %}<span class="status-pill supervisor-detail-approved"><i class="bi bi-circle-fill"></i> Approved</span>{% else %}<span class="status-pill supervisor-detail-pending"><i class="bi bi-circle-fill"></i> Pending</span>{% endif %}</td><td class="text-end">{% if not log.is_verified %}<form method="post" action="{% url 'approve_log' log.id %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn supervisor-detail-approve">Approve</button></form>{% endif %}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}<div class="supervisor-detail-empty"><i class="bi bi-clock-history"></i><strong>No daily logs yet</strong><p>The student has not submitted any daily logs.</p></div>{% endif %}
+      </section>
+
+      <section class="il-card supervisor-detail-card">
+        <div class="supervisor-detail-card-heading"><div><div class="card-eyebrow">DOCUMENTS</div><h2>Submitted documents</h2></div></div>
+        {% if documents %}<div class="supervisor-document-list">{% for document in documents %}<div class="supervisor-document-item"><div class="supervisor-document-icon"><i class="bi bi-file-earmark-text"></i></div><div class="supervisor-document-info"><strong>{{ document.title }}</strong><span>{{ document.get_report_type_display }} · {{ document.submitted_at|date:"M d, Y" }}</span></div><a href="{% url 'document_download' document.id %}" class="btn supervisor-document-btn">View</a></div>{% endfor %}</div>
+        {% else %}<div class="supervisor-detail-empty compact"><i class="bi bi-folder2-open"></i><strong>No documents submitted</strong><p>There are no student documents attached to this internship yet.</p></div>{% endif %}
+      </section>
+    </main>
+
+    <aside>
+      <section class="il-card supervisor-detail-card">
+        <div class="supervisor-detail-card-heading"><div><div class="card-eyebrow">EVALUATION</div><h2>Supervisor evaluation</h2></div></div>
+        {% if supervisor_evaluation %}<div class="supervisor-evaluation-complete"><div class="supervisor-evaluation-score">{{ supervisor_evaluation.average_score|floatformat:1 }} <span>/ 5.0</span></div><strong>Evaluation submitted</strong><p>{{ supervisor_evaluation.created_at|date:"M d, Y" }}</p></div>
+        {% else %}<div class="supervisor-evaluation-due"><div class="supervisor-evaluation-icon"><i class="bi bi-star"></i></div><strong>Evaluation is due</strong><p>Record the intern's performance across the evaluation criteria.</p><a href="{% url 'evaluate_student' internship.id %}" class="btn supervisor-evaluate-full">Complete evaluation</a></div>{% endif %}
+      </section>
+
+      <section class="il-card supervisor-detail-card">
+        <div class="card-eyebrow">STUDENT PROFILE</div><h2 class="supervisor-side-name">{{ student.user.get_full_name }}</h2>
+        <div class="supervisor-side-list"><div><span>Student number</span><strong>{{ student.student_number|default:"Not set" }}</strong></div><div><span>Year level</span><strong>{{ student.year_level|default:"Not set" }}</strong></div><div><span>Contact</span><strong>{{ student.contact_number|default:"Not set" }}</strong></div><div><span>Email</span><strong>{{ student.user.email }}</strong></div></div>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

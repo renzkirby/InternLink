@@ -573,6 +573,63 @@ def coordinator_student_detail(request, internship_id):
 
 
 @login_required
+def supervisor_intern_detail(request, internship_id):
+    internship = get_object_or_404(
+        Internship.objects.select_related(
+            "student__user",
+            "company",
+            "supervisor__user",
+            "coordinator__user",
+        ),
+        id=internship_id,
+    )
+
+    if not is_supervisor(request.user) or not can_access_internship(
+        request.user, internship
+    ):
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
+    recent_logs = internship.daily_logs.order_by("-date", "-id")[:15]
+    documents = internship.student_reports.order_by("-submitted_at")
+    approved_hours = (
+        internship.daily_logs.filter(is_verified=True).aggregate(
+            Sum("hours_rendered")
+        )["hours_rendered__sum"]
+        or 0
+    )
+    pending_logs_count = internship.daily_logs.filter(is_verified=False).count()
+    progress_percent = (
+        min(
+            round((float(approved_hours) / internship.required_hours) * 100, 1),
+            100,
+        )
+        if internship.required_hours
+        else 0
+    )
+    supervisor_evaluation = (
+        internship.evaluations.filter(evaluator_role="supervisor")
+        .select_related("evaluator")
+        .first()
+    )
+
+    return render(
+        request,
+        "app/supervisor_intern_detail.html",
+        {
+            "internship": internship,
+            "student": internship.student,
+            "recent_logs": recent_logs,
+            "documents": documents,
+            "approved_hours": approved_hours,
+            "pending_logs_count": pending_logs_count,
+            "progress_percent": progress_percent,
+            "supervisor_evaluation": supervisor_evaluation,
+        },
+    )
+
+
+@login_required
 def generate_dtr_pdf(request, internship_id):
     internship = get_object_or_404(
         Internship.objects.select_related(
