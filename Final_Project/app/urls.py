@@ -22,6 +22,11 @@ urlpatterns = [
     ),
 
     path("documents/upload/", views.upload_document, name="upload_document"),
+    path(
+        "documents/<int:report_id>/",
+        views.download_document,
+        name="document_download",
+    ),
 
     path(
         "coordinator/student/<int:internship_id>/",

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
@@ -16,7 +18,8 @@ from .models import (
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField(
-        required=True, help_text="Required. Use a valid email address."
+        required=True,
+        help_text="Required. Use a valid email address.",
     )
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
@@ -98,7 +101,10 @@ class DailyLogForm(forms.ModelForm):
         if self.internship:
             log_date = cleaned_data.get("date")
             if log_date and log_date > self.internship.end_date:
-                self.add_error("date", "The selected date is outside the internship period.")
+                self.add_error(
+                    "date",
+                    "The selected date is outside the internship period.",
+                )
 
         return cleaned_data
 
@@ -146,6 +152,9 @@ class EvaluationForm(forms.ModelForm):
 
 
 class StudentReportForm(forms.ModelForm):
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx"}
+
     class Meta:
         model = StudentReport
         fields = ["report_type", "title", "week_number", "file"]
@@ -161,9 +170,15 @@ class StudentReportForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Optional (for Weekly Reports)",
+                    "min": 1,
                 }
             ),
-            "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "file": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": ".pdf,.doc,.docx",
+                }
+            ),
         }
 
     def clean(self):
@@ -172,7 +187,10 @@ class StudentReportForm(forms.ModelForm):
         week_number = cleaned_data.get("week_number")
 
         if report_type == "weekly_report" and not week_number:
-            self.add_error("week_number", "Week number is required for weekly reports.")
+            self.add_error(
+                "week_number",
+                "Week number is required for weekly reports.",
+            )
         elif report_type != "weekly_report" and week_number:
             self.add_error(
                 "week_number",
@@ -180,6 +198,24 @@ class StudentReportForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+    def clean_file(self):
+        uploaded_file = self.cleaned_data.get("file")
+        if not uploaded_file:
+            return uploaded_file
+
+        extension = Path(uploaded_file.name).suffix.lower()
+        if extension not in self.ALLOWED_EXTENSIONS:
+            raise forms.ValidationError(
+                "Unsupported file type. Upload a PDF, DOC, or DOCX file."
+            )
+
+        if uploaded_file.size > self.MAX_FILE_SIZE:
+            raise forms.ValidationError(
+                "File is too large. Maximum allowed size is 5 MB."
+            )
+
+        return uploaded_file
 
 
 class InternshipDeploymentForm(forms.ModelForm):
@@ -248,17 +284,28 @@ class InternshipDeploymentForm(forms.ModelForm):
         supervisor = cleaned_data.get("supervisor")
 
         if not self.school:
-            raise forms.ValidationError("A school context is required for internship deployment.")
+            raise forms.ValidationError(
+                "A school context is required for internship deployment."
+            )
 
         if student and student.school != self.school:
-            self.add_error("student", "You cannot deploy a student from another school.")
+            self.add_error(
+                "student",
+                "You cannot deploy a student from another school.",
+            )
 
         if company and company.school != self.school:
-            self.add_error("company", "You cannot assign a company from another school.")
+            self.add_error(
+                "company",
+                "You cannot assign a company from another school.",
+            )
 
         if supervisor:
             if supervisor.company.school != self.school:
-                self.add_error("supervisor", "You cannot assign a supervisor from another school.")
+                self.add_error(
+                    "supervisor",
+                    "You cannot assign a supervisor from another school.",
+                )
             elif company and supervisor.company_id != company.id:
                 self.add_error(
                     "supervisor",
@@ -266,9 +313,13 @@ class InternshipDeploymentForm(forms.ModelForm):
                 )
 
         if student and Internship.objects.filter(
-            student=student, status="ongoing"
+            student=student,
+            status="ongoing",
         ).exists():
-            self.add_error("student", "This student already has an active internship.")
+            self.add_error(
+                "student",
+                "This student already has an active internship.",
+            )
 
         return cleaned_data
 
@@ -306,7 +357,8 @@ class CompanyForm(forms.ModelForm):
         if (
             self.school
             and Company.objects.filter(
-                name__iexact=name, school=self.school
+                name__iexact=name,
+                school=self.school,
             ).exists()
         ):
             raise forms.ValidationError(

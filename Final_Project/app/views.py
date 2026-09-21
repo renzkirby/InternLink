@@ -1,10 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from mimetypes import guess_type
 
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -27,6 +29,7 @@ from .models import (
     Evaluation,
     Internship,
     StudentProfile,
+    StudentReport,
     User,
 )
 from .permissions import (
@@ -373,6 +376,41 @@ def upload_document(request):
 
 
 @login_required
+def download_document(request, report_id):
+    report = get_object_or_404(
+        StudentReport.objects.select_related(
+            "internship__student__user",
+            "internship__company",
+            "internship__supervisor",
+            "internship__coordinator",
+        ),
+        id=report_id,
+    )
+
+    if not can_access_internship(request.user, report.internship):
+        messages.error(request, "You are not authorized to access this document.")
+        return redirect("dashboard")
+
+    if not report.file:
+        messages.error(request, "This document is no longer available.")
+        return redirect("dashboard")
+
+    content_type, _ = guess_type(report.file.name)
+    try:
+        file_handle = report.file.open("rb")
+    except OSError:
+        messages.error(request, "The requested document could not be opened.")
+        return redirect("dashboard")
+
+    return FileResponse(
+        file_handle,
+        as_attachment=False,
+        filename=report.title,
+        content_type=content_type or "application/octet-stream",
+    )
+
+
+@login_required
 def coordinator_student_detail(request, internship_id):
     internship = get_object_or_404(
         Internship.objects.select_related(
@@ -392,9 +430,12 @@ def coordinator_student_detail(request, internship_id):
 
     documents = internship.student_reports.order_by("-submitted_at")
     recent_logs = internship.daily_logs.order_by("-date")[:10]
-    approved_hours = internship.daily_logs.filter(is_verified=True).aggregate(
-        Sum("hours_rendered")
-    )["hours_rendered__sum"] or 0
+    approved_hours = (
+        internship.daily_logs.filter(is_verified=True).aggregate(
+            Sum("hours_rendered")
+        )["hours_rendered__sum"]
+        or 0
+    )
 
     return render(
         request,
@@ -501,8 +542,6 @@ def coordinator_deploy_intern(request):
             internship.coordinator = coordinator_profile
             internship.status = "ongoing"
 
-            # Keep the existing simple planning rule for the prototype:
-            # 8 rendered hours per workday plus a buffer for non-working days.
             estimated_days = max(
                 int((internship.required_hours + 7) / 8) + 20,
                 1,
@@ -518,7 +557,11 @@ def coordinator_deploy_intern(request):
     else:
         form = InternshipDeploymentForm(school=coordinator_profile.school)
 
-    return render(request, "app/coordinator_deploy_intern.html", {"form": form})
+    return render(
+        request,
+        "app/coordinator_deploy_intern.html",
+        {"form": form},
+    )
 
 
 @login_required
@@ -576,7 +619,10 @@ def get_supervisors_for_company(request):
 
     coordinator_profile = getattr(request.user, "coordinator_profile", None)
     if coordinator_profile is None:
-        return JsonResponse({"detail": "Coordinator profile required"}, status=403)
+        return JsonResponse(
+            {"detail": "Coordinator profile required"},
+            status=403,
+        )
 
     company_id = request.GET.get("company_id")
     if not company_id:
