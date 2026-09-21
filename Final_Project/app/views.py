@@ -128,26 +128,62 @@ def dashboard_view(request):
 
         current_school = coordinator_profile.school
 
-        total_students = StudentProfile.objects.filter(school=current_school).count()
-        ongoing_internships = Internship.objects.filter(
-            status="ongoing",
+        school_internships = Internship.objects.filter(
             student__school=current_school,
             company__school=current_school,
+        )
+
+        total_students = StudentProfile.objects.filter(
+            school=current_school
         ).count()
-        total_companies = Company.objects.filter(school=current_school).count()
+        ongoing_internships = school_internships.filter(
+            status="ongoing"
+        ).count()
+        completed_internships = school_internships.filter(
+            status="completed"
+        ).count()
+        total_companies = Company.objects.filter(
+            school=current_school
+        ).count()
+        submitted_documents = StudentReport.objects.filter(
+            internship__student__school=current_school,
+            internship__company__school=current_school,
+        ).count()
+        pending_evaluations = school_internships.filter(
+            status="ongoing"
+        ).exclude(
+            evaluations__evaluator_role="supervisor"
+        ).count()
 
         recent_deployments = (
-            Internship.objects.select_related(
+            school_internships
+            .select_related(
                 "student__user",
                 "company",
                 "supervisor__user",
             )
-            .filter(
-                student__school=current_school,
-                company__school=current_school,
-            )
-            .order_by("-start_date")
+            .prefetch_related("daily_logs")
+            .order_by("-start_date", "-id")[:12]
         )
+
+        for internship in recent_deployments:
+            approved_hours = sum(
+                (
+                    log.hours_rendered or 0
+                    for log in internship.daily_logs.all()
+                    if log.is_verified
+                ),
+                0,
+            )
+            internship.approved_hours = approved_hours
+            internship.progress_percent = (
+                min(
+                    round((float(approved_hours) / internship.required_hours) * 100, 1),
+                    100,
+                )
+                if internship.required_hours
+                else 0
+            )
 
         return render(
             request,
@@ -155,7 +191,10 @@ def dashboard_view(request):
             {
                 "total_students": total_students,
                 "ongoing_internships": ongoing_internships,
+                "completed_internships": completed_internships,
                 "total_companies": total_companies,
+                "submitted_documents": submitted_documents,
+                "pending_evaluations": pending_evaluations,
                 "deployments": recent_deployments,
                 "current_school": current_school,
             },
