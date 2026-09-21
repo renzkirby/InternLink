@@ -4,7 +4,7 @@
     <div class="col-12">
       <h2>Supervisor Dashboard</h2>
       <p class="text-muted">
-        Welcome, {{ supervisor.user.first_name }} ({{ supervisor.company.name }} )
+        Welcome, {{ supervisor.user.first_name }} ({{ supervisor.company.name }})
       </p>
     </div>
   </div>
@@ -30,16 +30,17 @@
           <tbody>
             {% for log in pending_logs %}
             <tr>
-              <td class="fw-bold">{{ log.internship.student.user.first_name }}</td>
-              <td>{{ log.date }}</td>
+              <td class="fw-bold">{{ log.internship.student.user.get_full_name }}</td>
+              <td>{{ log.date|date:"M d, Y" }}</td>
               <td>{{ log.hours_rendered }}</td>
               <td>{{ log.work_description|truncatechars:50 }}</td>
               <td>
-                <a
-                  href="{% url 'approve_log' log.id %}"
-                  class="btn btn-sm btn-success">
-                  Approve
-                </a>
+                <form method="post" action="{% url 'approve_log' log.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-success">
+                    Approve
+                  </button>
+                </form>
               </td>
             </tr>
             {% endfor %}
@@ -54,41 +55,39 @@
       {% endif %}
     </div>
   </div>
-</div>
 
-<div class="card shadow mt-4">
-  <div class="card-header bg-primary text-white">
-    <h5 class="mb-0">My Interns</h5>
-  </div>
-  <div class="card-body">
-    {% if my_internships %}
-    <ul class="list-group">
-      {% for intern in my_internships %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ intern.student.user.get_full_name }}</strong>
-          <br />
-          <small class="text-muted">{{ intern.course }}</small>
-        </div>
-        {% if intern.has_evaluation %}
-        <button
-          class="btn btn-sm btn-success"
-          disabled>
-          <i class="bi bi-check-circle-fill"></i> Done
-        </button>
-        {% else %}
-        <a
-          href="{% url 'evaluate_student' intern.id %}"
-          class="btn btn-sm btn-outline-primary">
-          Evaluate
-        </a>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-muted">No active interns assigned.</p>
-    {% endif %}
+  <div class="card shadow mt-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">My Interns</h5>
+    </div>
+    <div class="card-body">
+      {% if my_internships %}
+      <ul class="list-group">
+        {% for intern in my_internships %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ intern.student.user.get_full_name }}</strong>
+            <br />
+            <small class="text-muted">{{ intern.student.course }}</small>
+          </div>
+          {% if intern.has_evaluation %}
+          <button class="btn btn-sm btn-success" disabled>
+            Done
+          </button>
+          {% else %}
+          <a
+            href="{% url 'evaluate_student' intern.id %}"
+            class="btn btn-sm btn-outline-primary">
+            Evaluate
+          </a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">No active interns assigned.</p>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}

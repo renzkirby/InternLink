@@ -1,15 +1,16 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+
 from .models import (
-    User,
-    StudentProfile,
-    DailyLog,
-    Evaluation,
-    StudentReport,
-    Internship,
-    SupervisorProfile,
     Company,
     CoordinatorProfile,
+    DailyLog,
+    Evaluation,
+    Internship,
+    StudentProfile,
+    StudentReport,
+    SupervisorProfile,
+    User,
 )
 
 
@@ -22,30 +23,30 @@ class RegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "email", "first_name", "last_name", "role"]
+        fields = ["username", "email", "first_name", "last_name"]
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         user.first_name = self.cleaned_data["first_name"]
         user.last_name = self.cleaned_data["last_name"]
+        user.role = User.Role.STUDENT
 
         if commit:
             user.save()
+
         return user
 
 
 class StudentProfileForm(forms.ModelForm):
-
     class Meta:
         model = StudentProfile
-        fields = ["student_number", "school", "course", "year_level", "contact_number"]
-
+        fields = ["student_number", "course", "year_level", "contact_number"]
         widgets = {
             "student_number": forms.TextInput(attrs={"class": "form-control"}),
             "course": forms.TextInput(attrs={"class": "form-control"}),
-            "school": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "e.g. Main Campus"}
+            "year_level": forms.NumberInput(
+                attrs={"class": "form-control", "min": 1, "max": 6}
             ),
             "contact_number": forms.TextInput(attrs={"class": "form-control"}),
         }
@@ -55,14 +56,20 @@ class CoordinatorProfileForm(forms.ModelForm):
     class Meta:
         model = CoordinatorProfile
         fields = ["school"]
-        widgets = {"school": forms.TextInput(attrs={"class": "form-control"})}
+        widgets = {
+            "school": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Cavite State University - Bacoor Campus",
+                }
+            )
+        }
 
 
 class DailyLogForm(forms.ModelForm):
     class Meta:
         model = DailyLog
         fields = ["date", "time_in", "time_out", "work_description"]
-
         widgets = {
             "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "time_in": forms.TimeInput(attrs={"type": "time", "class": "form-control"}),
@@ -70,9 +77,30 @@ class DailyLogForm(forms.ModelForm):
                 attrs={"type": "time", "class": "form-control"}
             ),
             "work_description": forms.Textarea(
-                attrs={"rows": 3, "placeholder": "What did you accomplish today?"}
+                attrs={
+                    "rows": 4,
+                    "class": "form-control",
+                    "placeholder": "Describe what you accomplished today...",
+                }
             ),
         }
+
+    def __init__(self, *args, internship=None, **kwargs):
+        self.internship = internship
+        super().__init__(*args, **kwargs)
+
+        if self.internship:
+            self.instance.internship = self.internship
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.internship:
+            log_date = cleaned_data.get("date")
+            if log_date and log_date > self.internship.end_date:
+                self.add_error("date", "The selected date is outside the internship period.")
+
+        return cleaned_data
 
 
 class EvaluationForm(forms.ModelForm):
@@ -88,17 +116,16 @@ class EvaluationForm(forms.ModelForm):
             "initiative",
             "comments",
         ]
-
         widgets = {
             "period_start": forms.DateInput(
-                attrs={"type": "date", "class": "form_control"}
+                attrs={"type": "date", "class": "form-control"}
             ),
             "period_end": forms.DateInput(
-                attrs={"type": "date", "class": "form_control"}
+                attrs={"type": "date", "class": "form-control"}
             ),
             "comments": forms.Textarea(
                 attrs={
-                    "rows": 3,
+                    "rows": 4,
                     "class": "form-control",
                     "placeholder": "Feedback for the student...",
                 }
@@ -107,23 +134,21 @@ class EvaluationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        SCORE_CHOICES = [(i, str(i)) for i in range(1, 6)]
-        score_fields = [
+        score_choices = [(i, str(i)) for i in range(1, 6)]
+        for field_name in (
             "punctuality",
             "work_quality",
             "communication",
             "teamwork",
             "initiative",
-        ]
-        for field in score_fields:
-            self.fields[field].widget = forms.RadioSelect(choices=SCORE_CHOICES)
+        ):
+            self.fields[field_name].widget = forms.RadioSelect(choices=score_choices)
 
 
 class StudentReportForm(forms.ModelForm):
     class Meta:
         model = StudentReport
         fields = ["report_type", "title", "week_number", "file"]
-
         widgets = {
             "report_type": forms.Select(attrs={"class": "form-select"}),
             "title": forms.TextInput(
@@ -141,20 +166,35 @@ class StudentReportForm(forms.ModelForm):
             "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        report_type = cleaned_data.get("report_type")
+        week_number = cleaned_data.get("week_number")
+
+        if report_type == "weekly_report" and not week_number:
+            self.add_error("week_number", "Week number is required for weekly reports.")
+        elif report_type != "weekly_report" and week_number:
+            self.add_error(
+                "week_number",
+                "Week number should only be provided for weekly reports.",
+            )
+
+        return cleaned_data
+
 
 class InternshipDeploymentForm(forms.ModelForm):
     student = forms.ModelChoiceField(
-        queryset=StudentProfile.objects.all(),
+        queryset=StudentProfile.objects.none(),
         label="Select Student",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
     supervisor = forms.ModelChoiceField(
-        queryset=SupervisorProfile.objects.all(),
+        queryset=SupervisorProfile.objects.none(),
         label="Select Supervisor",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
     company = forms.ModelChoiceField(
-        queryset=Company.objects.all(),
+        queryset=Company.objects.none(),
         label="Select Company",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
@@ -168,25 +208,69 @@ class InternshipDeploymentForm(forms.ModelForm):
             "required_hours",
             "start_date",
         ]
-
         widgets = {
-            "company": forms.Select(attrs={"class": "form-select"}),
-            "course": forms.TextInput(attrs={"class": "form-control"}),
             "required_hours": forms.NumberInput(
-                attrs={"class": "form-control", "value": 600}
+                attrs={"class": "form-control", "min": 1}
             ),
             "start_date": forms.DateInput(
                 attrs={"class": "form-control", "type": "date"}
             ),
         }
 
-    def clean_student(self):
-        student = self.cleaned_data.get("student")
-        if Internship.objects.filter(student=student, status="ongoing").exists():
-            raise forms.ValidationError(
-                "This student already has an active internship."
-            )
-        return student
+    def __init__(self, *args, school=None, **kwargs):
+        self.school = school
+        super().__init__(*args, **kwargs)
+
+        if not school:
+            return
+
+        busy_student_ids = Internship.objects.filter(
+            status="ongoing"
+        ).values_list("student_id", flat=True)
+
+        self.fields["student"].queryset = StudentProfile.objects.filter(
+            school=school
+        ).exclude(id__in=busy_student_ids)
+
+        self.fields["company"].queryset = Company.objects.filter(school=school)
+
+        company_id = self.data.get("company") if self.is_bound else None
+        if company_id:
+            self.fields["supervisor"].queryset = SupervisorProfile.objects.filter(
+                company_id=company_id,
+                company__school=school,
+            ).select_related("user", "company")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        student = cleaned_data.get("student")
+        company = cleaned_data.get("company")
+        supervisor = cleaned_data.get("supervisor")
+
+        if not self.school:
+            raise forms.ValidationError("A school context is required for internship deployment.")
+
+        if student and student.school != self.school:
+            self.add_error("student", "You cannot deploy a student from another school.")
+
+        if company and company.school != self.school:
+            self.add_error("company", "You cannot assign a company from another school.")
+
+        if supervisor:
+            if supervisor.company.school != self.school:
+                self.add_error("supervisor", "You cannot assign a supervisor from another school.")
+            elif company and supervisor.company_id != company.id:
+                self.add_error(
+                    "supervisor",
+                    "The selected supervisor does not belong to the selected company.",
+                )
+
+        if student and Internship.objects.filter(
+            student=student, status="ongoing"
+        ).exists():
+            self.add_error("student", "This student already has an active internship.")
+
+        return cleaned_data
 
 
 class CompanyForm(forms.ModelForm):
@@ -212,16 +296,18 @@ class CompanyForm(forms.ModelForm):
             "contact_email": forms.EmailInput(attrs={"class": "form-control"}),
         }
 
-    def __init__(self, *args, **kwargs):
-        self.school = kwargs.pop("school", None)
-        super(CompanyForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, school=None, **kwargs):
+        self.school = school
+        super().__init__(*args, **kwargs)
 
     def clean_name(self):
         name = self.cleaned_data.get("name")
 
         if (
             self.school
-            and Company.objects.filter(name__iexact=name, school=self.school).exists()
+            and Company.objects.filter(
+                name__iexact=name, school=self.school
+            ).exists()
         ):
             raise forms.ValidationError(
                 f"{name} is already a partner of {self.school}."
@@ -242,22 +328,7 @@ class SupervisorProfileForm(forms.ModelForm):
         fields = ["company"]
 
     def __init__(self, *args, **kwargs):
-        super(SupervisorProfileForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["company"].label_from_instance = (
             lambda obj: f"{obj.name} ({obj.school})"
         )
-
-
-class CoordinatorProfileForm(forms.ModelForm):
-    class Meta:
-        model = CoordinatorProfile
-        fields = ["school"]
-
-        widgets = {
-            "school": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Cavite State University - Bacoor Campus",
-                }
-            ),
-        }

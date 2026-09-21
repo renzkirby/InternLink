@@ -1,41 +1,32 @@
-from django.urls import path
-from .views import register_view
-from app import views
 from django.contrib.auth import views as auth_views
+from django.urls import path
+
+from . import views
 
 urlpatterns = [
-    path("dashboard/", views.dashboard_view, name="dashboard"),
-    path("register/", views.register_view, name="register"),
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="app/login.html"),
-        name="login",
-    ),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("", auth_views.LoginView.as_view(template_name="app/login.html"), name="home"),
-    path(
-        "profile/update/", views.student_profile_update, name="student_profile_update"
-    ),
+    path("login/", auth_views.LoginView.as_view(template_name="app/login.html"), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("register/", views.register_view, name="register"),
+    path("dashboard/", views.dashboard_view, name="dashboard"),
+
+    path("profile/update/", views.student_profile_update, name="student_profile_update"),
+
     path("log/add/", views.add_daily_log, name="add_daily_log"),
     path("log/approve/<int:log_id>/", views.approve_log, name="approve_log"),
+
     path(
-        "evaluate/<int:internship_id>/", views.evaluate_student, name="evaluate_student"
+        "evaluate/<int:internship_id>/",
+        views.evaluate_student,
+        name="evaluate_student",
     ),
+
     path("documents/upload/", views.upload_document, name="upload_document"),
+
     path(
         "coordinator/student/<int:internship_id>/",
         views.coordinator_student_detail,
         name="coordinator_student_detail",
-    ),
-    path(
-        "export/dtr/<int:internship_id>/",
-        views.generate_dtr_pdf,
-        name="generate_dtr_pdf",
-    ),
-    path(
-        "my-evaluation/",
-        views.student_evaluation_detail,
-        name="student_evaluation_detail",
     ),
     path(
         "coordinator/deploy/",
@@ -48,20 +39,28 @@ urlpatterns = [
         name="coordinator_add_company",
     ),
     path(
+        "coordinator/setup/",
+        views.complete_coordinator_profile,
+        name="complete_coordinator_profile",
+    ),
+
+    path(
         "supervisor/setup/",
         views.complete_supervisor_profile,
         name="complete_supervisor_profile",
     ),
+
     path(
-        "coordinator/setup/",
-        views.complete_coordinator_profile,
-        name="complete_coordinator_profile",
+        "export/dtr/<int:internship_id>/",
+        views.generate_dtr_pdf,
+        name="generate_dtr_pdf",
     ),
     path(
-        "coordinator/setup/",
-        views.complete_coordinator_profile,
-        name="complete_coordinator_profile",
+        "my-evaluation/",
+        views.student_evaluation_detail,
+        name="student_evaluation_detail",
     ),
+
     path(
         "ajax/get-supervisors/",
         views.get_supervisors_for_company,
