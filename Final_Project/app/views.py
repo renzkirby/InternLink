@@ -532,6 +532,26 @@ def coordinator_student_detail(request, internship_id):
         )["hours_rendered__sum"]
         or 0
     )
+    total_logs = internship.daily_logs.count()
+    pending_logs = internship.daily_logs.filter(is_verified=False).count()
+    progress_percent = (
+        min(
+            round((float(approved_hours) / internship.required_hours) * 100, 1),
+            100,
+        )
+        if internship.required_hours
+        else 0
+    )
+    supervisor_evaluation = (
+        internship.evaluations.filter(evaluator_role="supervisor")
+        .select_related("evaluator")
+        .first()
+    )
+    coordinator_evaluation = (
+        internship.evaluations.filter(evaluator_role="coordinator")
+        .select_related("evaluator")
+        .first()
+    )
 
     return render(
         request,
@@ -542,6 +562,11 @@ def coordinator_student_detail(request, internship_id):
             "documents": documents,
             "recent_logs": recent_logs,
             "approved_hours": approved_hours,
+            "progress_percent": progress_percent,
+            "total_logs": total_logs,
+            "pending_logs": pending_logs,
+            "supervisor_evaluation": supervisor_evaluation,
+            "coordinator_evaluation": coordinator_evaluation,
         },
     )
 
