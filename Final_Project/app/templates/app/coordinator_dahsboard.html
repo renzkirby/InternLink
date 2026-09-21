@@ -1,115 +1,155 @@
-{% extends 'app/base.html' %} {% block content %}
-<div class="container">
-  <div
-    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <div>
-      <h1 class="h2">Coordinator Dashboard</h1>
-      <span class="badge bg-primary"> <i class="bi bi-building"></i> {{ current_school }} </span>
+{% extends 'app/base.html' %}
+
+{% block title %}Coordinator Dashboard | InternLink{% endblock %}
+
+{% block content %}
+<section class="page-header coordinator-header">
+  <div>
+    <span class="eyebrow">COORDINATOR PORTAL</span>
+    <h1>Good day, {{ user.first_name|default:user.username }}.</h1>
+    <p>Monitor internship placements, student progress, and industry partners for <strong>{{ current_school }}</strong>.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'coordinator_deploy_intern' %}" class="btn app-primary-btn">
+      <i class="bi bi-person-plus-fill me-1"></i> Deploy Intern
+    </a>
+    <a href="{% url 'coordinator_add_company' %}" class="btn app-ghost-light-btn">
+      <i class="bi bi-building-add me-1"></i> Add Company
+    </a>
+  </div>
+</section>
+
+<section class="metric-grid coordinator-metrics mb-4">
+  <article class="metric-card">
+    <div class="metric-icon metric-icon-blue"><i class="bi bi-people-fill"></i></div>
+    <div><span>Students</span><strong>{{ total_students }}</strong><small>Registered in your school</small></div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-icon metric-icon-green"><i class="bi bi-person-workspace"></i></div>
+    <div><span>Active Internships</span><strong>{{ ongoing_internships }}</strong><small>Currently ongoing</small></div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-icon metric-icon-purple"><i class="bi bi-building"></i></div>
+    <div><span>Industry Partners</span><strong>{{ total_companies }}</strong><small>Partner companies</small></div>
+  </article>
+  <article class="metric-card">
+    <div class="metric-icon metric-icon-amber"><i class="bi bi-star-fill"></i></div>
+    <div><span>Evaluation Follow-ups</span><strong>{{ pending_evaluations }}</strong><small>Ongoing placements without supervisor evaluation</small></div>
+  </article>
+</section>
+
+<section class="dashboard-grid coordinator-dashboard-grid">
+  <div class="dashboard-card placements-card">
+    <div class="dashboard-card-header">
+      <div>
+        <span class="card-eyebrow">PLACEMENT MANAGEMENT</span>
+        <h2>Internship placements</h2>
+        <p>Track current and completed OJT deployments at a glance.</p>
+      </div>
+      <span class="dashboard-count">{{ deployments|length }}</span>
     </div>
 
-    <div class="btn-toolbar mb-2 mb-md-0"></div>
+    <div class="placements-table-wrap">
+      <div class="mobile-table-hint" aria-hidden="true"><i class="bi bi-arrow-left-right me-1"></i> Swipe horizontally to view progress and actions</div>
+      <table class="table app-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Company</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for internship in deployments %}
+          <tr>
+            <td>
+              <div class="table-primary">{{ internship.student.user.get_full_name }}</div>
+              <div class="table-secondary">{{ internship.student.course }}</div>
+            </td>
+            <td>
+              <div class="table-primary">{{ internship.company.name }}</div>
+              <div class="table-secondary">{{ internship.start_date|date:"M d, Y" }}</div>
+            </td>
+            <td>
+              {% if internship.status == 'ongoing' %}
+                <span class="status-pill status-success"><i class="bi bi-circle-fill"></i> Ongoing</span>
+              {% elif internship.status == 'completed' %}
+                <span class="status-pill status-info"><i class="bi bi-check-circle-fill"></i> Completed</span>
+              {% else %}
+                <span class="status-pill status-neutral">{{ internship.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td class="progress-cell">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ internship.approved_hours|floatformat:1 }} / {{ internship.required_hours }} hrs</span>
+                <strong>{{ internship.progress_percent }}%</strong>
+              </div>
+              <div class="progress app-progress">
+                <div class="progress-bar" style="width: {{ internship.progress_percent }}%"></div>
+              </div>
+            </td>
+            <td class="text-end">
+              <a href="{% url 'coordinator_student_detail' internship.id %}" class="btn btn-sm app-table-action">
+                View <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-clipboard2-x"></i></div>
+                <strong>No internship placements yet</strong>
+                <p>Deploy your first intern to start tracking OJT progress.</p>
+                <a href="{% url 'coordinator_deploy_intern' %}" class="btn app-primary-btn btn-sm">Deploy Intern</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <div class="card text-white bg-primary mb-3 shadow">
-        <div class="card-body">
-          <h5 class="card-title">Total Students</h5>
-          <h2 class="display-4">{{ total_students }}</h2>
-        </div>
+  <aside class="dashboard-card coordinator-side-card">
+    <div class="dashboard-card-header">
+      <div>
+        <span class="card-eyebrow">AT A GLANCE</span>
+        <h2>Placement summary</h2>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card text-white bg-success mb-3 shadow">
-        <div class="card-body">
-          <h5 class="card-title">Active Interns</h5>
-          <h2 class="display-4">{{ ongoing_internships }}</h2>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card text-white bg-info mb-3 shadow">
-        <div class="card-body">
-          <h5 class="card-title">Partner Companies</h5>
-          <h2 class="display-4">{{ total_companies }}</h2>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="card shadow">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Master List of Internships</h5>
-      <h5>{{ user.school }}</h5>
-      <div class="mb-3">
-        <a
-          href="{% url 'coordinator_deploy_intern' %}"
-          class="btn btn-primary me-2">
-          <i class="bi bi-person-plus-fill"></i> Deploy New Intern
-        </a>
+    <div class="summary-stat">
+      <span>Active internships</span>
+      <strong>{{ ongoing_internships }}</strong>
+    </div>
+    <div class="summary-stat">
+      <span>Completed internships</span>
+      <strong>{{ completed_internships }}</strong>
+    </div>
+    <div class="summary-stat">
+      <span>Submitted documents</span>
+      <strong>{{ submitted_documents }}</strong>
+    </div>
+    <div class="summary-stat">
+      <span>Industry partners</span>
+      <strong>{{ total_companies }}</strong>
+    </div>
 
-        <a
-          href="{% url 'coordinator_add_company' %}"
-          class="btn btn-outline-success">
-          <i class="bi bi-building-add"></i> Add Company
-        </a>
-      </div>
+    <div class="quick-actions">
+      <a href="{% url 'coordinator_deploy_intern' %}" class="quick-action">
+        <span class="quick-action-icon"><i class="bi bi-person-plus"></i></span>
+        <span><strong>Deploy an intern</strong><small>Create a new placement</small></span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+      <a href="{% url 'coordinator_add_company' %}" class="quick-action">
+        <span class="quick-action-icon"><i class="bi bi-building-add"></i></span>
+        <span><strong>Add industry partner</strong><small>Register a company</small></span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Student</th>
-              <th>Course</th>
-              <th>Company</th>
-              <th>Start Date</th>
-              <th>Status</th>
-              <th>Progress</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for internship in deployments %}
-            <tr>
-              <td class="fw-bold">{{ internship.student.user.get_full_name }}</td>
-              <td>{{ internship.student.course }}</td>
-              <td>{{ internship.company.name }}</td>
-              <td>{{ internship.start_date|date:"M d, Y" }}</td>
-              <td>
-                {% if internship.status == 'ongoing' %}
-                <span class="badge bg-success">Ongoing</span>
-                {% elif internship.status == 'completed' %}
-                <span class="badge bg-primary">Completed</span>
-                {% else %}
-                <span class="badge bg-secondary">{{ internship.get_status_display }}</span>
-                {% endif %}
-              </td>
-              <td>
-                <small class="text-muted">Target: {{ internship.required_hours }} hrs</small>
-              </td>
-              <td>
-                <a
-                  href="{% url 'coordinator_student_detail' internship.id %}"
-                  class="btn btn-sm btn-primary">
-                  View Details
-                </a>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td
-                colspan="7"
-                class="text-center p-4">
-                No internships found.
-                <a href="/admin/app/internship/add/">Add one in Admin</a>.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+  </aside>
+</section>
 {% endblock %}
