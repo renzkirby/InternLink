@@ -1,6 +1,11 @@
 from django.db import migrations, models
 
 
+def backfill_review_status(apps, schema_editor):
+    DailyLog = apps.get_model("app", "DailyLog")
+    DailyLog.objects.filter(is_verified=True).update(review_status="approved")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -25,5 +30,9 @@ class Migration(migrations.Migration):
                 default="pending",
                 max_length=24,
             ),
+        ),
+        migrations.RunPython(
+            backfill_review_status,
+            migrations.RunPython.noop,
         ),
     ]
