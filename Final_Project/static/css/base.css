@@ -114,14 +114,30 @@ a {
     text-transform: capitalize;
 }
 
-.app-logout-btn,
+.app-logout-btn {
+    min-width: 96px;
+    min-height: 40px;
+    padding: 0.55rem 0.9rem;
+    color: #d0d5dd;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 9px;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.app-logout-btn:hover {
+    color: #fff;
+    border-color: rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.06);
+}
+
 .app-ghost-btn {
     color: #d0d5dd;
     border: 1px solid rgba(255,255,255,0.15);
     background: transparent;
 }
 
-.app-logout-btn:hover,
 .app-ghost-btn:hover {
     color: #fff;
     border-color: rgba(255,255,255,0.28);
