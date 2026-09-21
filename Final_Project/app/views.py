@@ -30,6 +30,7 @@ from .models import (
     Internship,
     StudentProfile,
     StudentReport,
+    SupervisorProfile,
     User,
 )
 from .permissions import (
