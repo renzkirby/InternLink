@@ -30,6 +30,7 @@ from .models import (
     Internship,
     StudentProfile,
     StudentReport,
+    SupervisorProfile,
     User,
 )
 from .permissions import (
@@ -765,5 +766,6 @@ def get_supervisors_for_company(request):
                 "name": f"{supervisor.user.get_full_name()} ({supervisor.company.name})",
             }
             for supervisor in supervisors
-        ]
+        ],
+        safe=False,
     )
