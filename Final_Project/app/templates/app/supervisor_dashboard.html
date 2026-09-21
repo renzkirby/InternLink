@@ -57,7 +57,7 @@
   </div>
 
   <div class="supervisor-dashboard-grid">
-    <section class="app-card supervisor-card">
+    <section class="il-card supervisor-card">
       <div class="supervisor-card-header">
         <div>
           <div class="card-eyebrow">ACTION REQUIRED</div>
@@ -129,9 +129,9 @@
               <span>{{ intern.student.course|default:"Course not set" }}</span>
             </div>
             {% if intern.has_evaluation %}
-              <span class="status-pill status-success"><i class="bi bi-circle-fill"></i>Evaluated</span>
+              <span class="status-pill supervisor-status-evaluated"><i class="bi bi-circle-fill"></i>Evaluated</span>
             {% else %}
-              <span class="status-pill status-info"><i class="bi bi-circle-fill"></i>Evaluation due</span>
+              <span class="status-pill supervisor-status-due"><i class="bi bi-circle-fill"></i>Evaluation due</span>
             {% endif %}
           </div>
 
@@ -139,7 +139,7 @@
             <span>{{ intern.approved_hours|floatformat:1 }} / {{ intern.required_hours }} hrs</span>
             <strong>{{ intern.progress_percent|floatformat:1 }}%</strong>
           </div>
-          <div class="progress app-progress">
+          <div class="progress supervisor-progress">
             <div class="progress-bar" style="width: {{ intern.progress_percent }}%"></div>
           </div>
 
