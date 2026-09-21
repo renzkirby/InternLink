@@ -76,6 +76,8 @@ def dashboard_view(request):
         recent_logs = []
         required_hours = 0
         completion_percent = 0
+        remaining_hours = 0
+        days_remaining = 0
         documents_count = 0
         has_evaluation = False
 
@@ -93,6 +95,12 @@ def dashboard_view(request):
                     100,
                 )
 
+            remaining_hours = max(required_hours - total_hours, 0)
+            days_remaining = max(
+                (active_internship.end_date - timezone.localdate()).days,
+                0,
+            )
+
             recent_logs = active_internship.daily_logs.order_by("-date")[:5]
             has_evaluation = active_internship.has_evaluation
 
@@ -105,6 +113,8 @@ def dashboard_view(request):
                 "total_hours": total_hours,
                 "required_hours": required_hours,
                 "completion_percent": round(completion_percent, 1),
+                "remaining_hours": remaining_hours,
+                "days_remaining": days_remaining,
                 "recent_logs": recent_logs,
                 "documents_uploaded": documents_count,
                 "has_evaluation": has_evaluation,

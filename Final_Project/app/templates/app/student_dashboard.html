@@ -1,178 +1,341 @@
-{% extends 'app/base.html' %} {% block content %}
-<div class="container">
-  <div class="row mb-4">
-    <div class="col-12">
-      <h2>Welcome, {{ user.first_name }}!</h2>
-      <p class="text-muted">Student Dashboard</p>
+{% extends 'app/base.html' %}
+
+{% block title %}Student Dashboard · InternLink{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-12">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+      <div>
+        <div class="dashboard-eyebrow">Student Portal</div>
+        <h1 class="dashboard-title mt-1">
+          Welcome back, {{ user.first_name|default:user.username }}.
+        </h1>
+        <p class="dashboard-subtitle">
+          Track your internship hours, requirements, and supervisor updates in one place.
+        </p>
+      </div>
+
+      {% if internship %}
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'add_daily_log' %}" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>
+          Add Daily Log
+        </a>
+        <a href="{% url 'upload_document' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-upload me-1"></i>
+          Upload Document
+        </a>
+      </div>
+      {% endif %}
     </div>
   </div>
 
   {% if not profile.student_number %}
-  <div
-    class="alert alert-warning shadow-sm d-flex align-items-center"
-    role="alert">
-    <div class="flex-grow-1">
-      <strong>Action Required:</strong> You haven't set up your student profile yet. You must
-      complete this before applying for internships.
+  <div class="col-12">
+    <div class="alert app-alert app-alert-warning mb-0" role="alert">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+          <div class="fw-bold">
+            <i class="bi bi-exclamation-circle-fill me-1"></i>
+            Complete your student profile
+          </div>
+          <div class="small mt-1">
+            Add your student number, course, year level, and contact details so your coordinator has the information needed for deployment.
+          </div>
+        </div>
+        <a href="{% url 'student_profile_update' %}" class="btn btn-warning">
+          Complete Profile
+        </a>
+      </div>
     </div>
-    <a
-      href="{% url 'student_profile_update' %}"
-      class="btn btn-warning"
-      >Complete Profile Now</a
-    >
   </div>
   {% endif %}
 
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm border-primary">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="card-title text-primary mb-1">
-              <i class="bi bi-folder-check"></i> Program Requirements
-            </h5>
-            <p class="card-text text-muted mb-0">
-              Manage your Weekly Reports, MOA, and Resume.
-              <span class="badge bg-secondary ms-2"
-                >{{ documents_uploaded|default:"0" }} Submitted</span
-              >
-            </p>
+  {% if internship %}
+  <div class="col-12">
+    <div class="il-card overflow-hidden">
+      <div class="il-card-body">
+        <div class="row g-4 align-items-center">
+          <div class="col-lg-8">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+              <div>
+                <div class="text-muted small fw-semibold text-uppercase">Current Internship</div>
+                <h2 class="h4 fw-bold mb-1 mt-1">{{ internship.company.name }}</h2>
+                <div class="text-muted small">
+                  {{ internship.start_date|date:"M d, Y" }}
+                  <span class="mx-1">·</span>
+                  {{ internship.end_date|date:"M d, Y" }}
+                </div>
+              </div>
+
+              <div>
+                <span class="status-pill status-ongoing">
+                  <i class="bi bi-circle-fill" style="font-size:.4rem;"></i>
+                  {{ internship.get_status_display }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="d-flex justify-content-between align-items-end gap-3 mb-2">
+                <div>
+                  <div class="text-muted small">Approved internship hours</div>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-bold lh-1">{{ total_hours }}</span>
+                    <span class="text-muted">/ {{ required_hours }} hrs</span>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-primary fs-5">{{ completion_percent }}%</div>
+                  <div class="text-muted small">{{ remaining_hours }} hrs remaining</div>
+                </div>
+              </div>
+
+              <div
+                class="progress il-progress"
+                role="progressbar"
+                aria-label="Internship completion"
+                aria-valuenow="{{ completion_percent }}"
+                aria-valuemin="0"
+                aria-valuemax="100">
+                <div
+                  class="progress-bar"
+                  style="width: {{ completion_percent }}%;"></div>
+              </div>
+            </div>
           </div>
-          <div>
-            <a
-              href="{% url 'upload_document' %}"
-              class="btn btn-primary">
-              Upload / View Documents
-            </a>
+
+          <div class="col-lg-4">
+            <div class="p-3 rounded-4 bg-light border">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Supervisor</span>
+                <i class="bi bi-person-badge text-primary"></i>
+              </div>
+              <div class="fw-semibold">
+                {% if internship.supervisor %}
+                  {{ internship.supervisor.user.get_full_name }}
+                {% else %}
+                  Not assigned
+                {% endif %}
+              </div>
+              <div class="text-muted small mt-1">
+                {{ internship.company.name }}
+              </div>
+              <hr class="my-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Days remaining</span>
+                <span class="fw-bold">{{ days_remaining }}</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div class="px-4 py-3 border-top bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div class="small text-muted">
+          <i class="bi bi-info-circle me-1"></i>
+          Only supervisor-approved logs contribute to your official hour total.
+        </div>
+        <a href="{% url 'generate_dtr_pdf' internship.id %}" target="_blank" class="btn btn-sm btn-outline-danger">
+          <i class="bi bi-file-earmark-pdf me-1"></i>
+          View Official DTR
+        </a>
       </div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-md-4">
-      <div class="card bg-light mb-3 shadow">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Recent Activities</span>
-          <a
-            href="{% url 'add_daily_log' %}"
-            class="btn btn-sm btn-primary"
-            >Add Time Log</a
-          >
+  <div class="col-md-4">
+    <div class="il-card metric-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="metric-label">Documents</div>
+          <div class="metric-value">{{ documents_uploaded }}</div>
         </div>
-        <div class="card-body p-0">
-          {% if recent_logs %}
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Hours</th>
-                  <th>Description</th>
-                  <th class="text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for log in recent_logs %}
-                <tr>
-                  <td>{{ log.date|date:"M d" }}</td>
-                  <td>
-                    <span class="badge bg-secondary">{{ log.hours_rendered }} hrs</span>
-                  </td>
-                  <td>{{ log.work_description|truncatechars:30 }}</td>
-
-                  <td class="text-center">
-                    {% if log.is_verified %}
-                    <span class="badge bg-success">Approved</span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark">Pending</span>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="p-3 text-muted text-center">No logs found yet. Start your journey!</div>
-          {% endif %}
+        <div class="metric-icon metric-icon-blue">
+          <i class="bi bi-folder2-open"></i>
         </div>
       </div>
+      <div class="text-muted small mt-3">Submitted internship requirements</div>
     </div>
-    <div class="col-md-4">
-      <div class="card text-white bg-success mb-3 shadow">
-        <div class="card-header">Total Hours</div>
-        <div class="card-body">
-          <h3 class="card-title">
-            {{ total_hours }} <span class="fs-6">/ {{ required_hours }}</span>
-          </h3>
-          <p class="card-text mb-1">Approved Hours</p>
+  </div>
 
-          <div
-            class="progress mt-2"
-            style="height: 5px">
-            <div
-              class="progress-bar bg-alert"
-              role="progressbar"
-              style="width: {{ completion_percent }}%;"
-              aria-valuenow="{{ completion_percent }}"
-              aria-valuemin="0"
-              aria-valuemax="100"></div>
+  <div class="col-md-4">
+    <div class="il-card metric-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="metric-label">Evaluation</div>
+          <div class="metric-value">
+            {% if has_evaluation %}Available{% else %}Pending{% endif %}
           </div>
-          <small>{{ completion_percent }}% Completed</small>
-          {% if internship %}
-          <div class="mt-3">
-            <a
-              href="{% url 'generate_dtr_pdf' internship.id %}"
-              target="_blank"
-              class="btn btn-danger w-100">
-              <i class="bi bi-file-pdf"></i> Download Official DTR
-            </a>
-          </div>
-          {% else %}
-          <div class="mt-3">
-            <button
-              class="btn btn-secondary w-100"
-              disabled>
-              DTR Unavailable
-            </button>
-          </div>
-          {% endif %}
+        </div>
+        <div class="metric-icon metric-icon-amber">
+          <i class="bi bi-star"></i>
         </div>
       </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card text-white bg-primary mb-3 shadow">
-        <div class="card-header">Internship Status</div>
-        <div class="card-body">
-          {% if internship %}
-          <h5 class="card-title">{{ internship.company.name }}</h5>
-          <p class="card-text badge bg-warning text-dark">{{ internship.get_status_display }}</p>
-          {% else %}
-          <h5 class="card-title">Not Started</h5>
-          <p class="card-text">You are not currently linked to a company.</p>
-          {% endif %} {% if internship and has_evaluation %}
-          <div class="mt-2">
-            <a
-              href="{% url 'student_evaluation_detail' %}"
-              class="btn btn-success w-100">
-              <i class="bi bi-star-fill"></i> View Performance Grade
-            </a>
-          </div>
-          {% else %}
-          <div class="mt-2">
-            <button
-              class="btn btn-secondary w-100"
-              disabled>
-              Evaluation Pending
-            </button>
-          </div>
-          {% endif %}
-        </div>
+      <div class="text-muted small mt-3">
+        {% if has_evaluation %}
+          Your supervisor has submitted feedback.
+        {% else %}
+          Your supervisor has not submitted feedback yet.
+        {% endif %}
       </div>
     </div>
   </div>
-  {% endblock %}
+
+  <div class="col-md-4">
+    <div class="il-card metric-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="metric-label">DTR</div>
+          <div class="metric-value">Official</div>
+        </div>
+        <div class="metric-icon metric-icon-green">
+          <i class="bi bi-file-earmark-text"></i>
+        </div>
+      </div>
+      <div class="text-muted small mt-3">Generate your verified daily time record</div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="il-card">
+      <div class="il-card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <div class="fw-bold">Recent daily logs</div>
+          <div class="text-muted small">Your five most recent submissions</div>
+        </div>
+        <a href="{% url 'add_daily_log' %}" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-plus-lg me-1"></i>
+          New log
+        </a>
+      </div>
+
+      {% if recent_logs %}
+      <div class="table-responsive">
+        <table class="table il-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Hours</th>
+              <th>Work summary</th>
+              <th class="text-end">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in recent_logs %}
+            <tr>
+              <td class="fw-semibold text-nowrap">{{ log.date|date:"M d, Y" }}</td>
+              <td class="text-nowrap">{{ log.hours_rendered }} hrs</td>
+              <td class="text-muted">{{ log.work_description|truncatechars:60 }}</td>
+              <td class="text-end">
+                {% if log.is_verified %}
+                <span class="status-pill status-completed">
+                  <i class="bi bi-check-circle-fill"></i> Approved
+                </span>
+                {% else %}
+                <span class="status-pill status-pending">
+                  <i class="bi bi-hourglass-split"></i> Pending
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="empty-state-title">No daily logs yet</div>
+        <p class="empty-state-copy">
+          Start recording your internship activities so your supervisor can review and approve your rendered hours.
+        </p>
+        <a href="{% url 'add_daily_log' %}" class="btn btn-primary mt-3">
+          Add your first log
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="il-card h-100">
+      <div class="il-card-header">
+        <div class="fw-bold">Quick actions</div>
+        <div class="text-muted small">Common internship tasks</div>
+      </div>
+      <div class="il-card-body d-grid gap-2">
+        <a href="{% url 'add_daily_log' %}" class="quick-action">
+          <span class="quick-action-icon"><i class="bi bi-clock"></i></span>
+          <span>
+            <span class="quick-action-title">Add daily log</span>
+            <span class="quick-action-copy">Record today's rendered hours</span>
+          </span>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </a>
+
+        <a href="{% url 'upload_document' %}" class="quick-action">
+          <span class="quick-action-icon"><i class="bi bi-upload"></i></span>
+          <span>
+            <span class="quick-action-title">Manage documents</span>
+            <span class="quick-action-copy">Upload or view requirements</span>
+          </span>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </a>
+
+        {% if has_evaluation %}
+        <a href="{% url 'student_evaluation_detail' %}" class="quick-action">
+          <span class="quick-action-icon"><i class="bi bi-star"></i></span>
+          <span>
+            <span class="quick-action-title">View evaluation</span>
+            <span class="quick-action-copy">Review supervisor feedback</span>
+          </span>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </a>
+        {% else %}
+        <div class="quick-action opacity-75">
+          <span class="quick-action-icon"><i class="bi bi-star"></i></span>
+          <span>
+            <span class="quick-action-title">Evaluation pending</span>
+            <span class="quick-action-copy">This becomes available after submission</span>
+          </span>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'generate_dtr_pdf' internship.id %}" target="_blank" class="quick-action">
+          <span class="quick-action-icon"><i class="bi bi-file-earmark-pdf"></i></span>
+          <span>
+            <span class="quick-action-title">View official DTR</span>
+            <span class="quick-action-copy">Generate your verified time record</span>
+          </span>
+          <i class="bi bi-chevron-right ms-auto text-muted"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="col-12">
+    <div class="il-card">
+      <div class="empty-state py-5">
+        <div class="empty-state-icon">
+          <i class="bi bi-briefcase"></i>
+        </div>
+        <div class="empty-state-title fs-5">No active internship yet</div>
+        <p class="empty-state-copy">
+          Your internship coordinator will deploy your OJT placement here once your profile and placement requirements are ready.
+        </p>
+        {% if not profile.student_number %}
+        <a href="{% url 'student_profile_update' %}" class="btn btn-primary mt-3">
+          Complete your profile
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
+{% endblock %}
