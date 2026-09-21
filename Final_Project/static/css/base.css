@@ -2025,3 +2025,16 @@ a {
 .supervisor-evaluate-link{color:#64748b}
 @media(max-width:950px){.supervisor-detail-grid{grid-template-columns:1fr}.supervisor-detail-meta-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:767.98px){.supervisor-detail{padding-top:1rem}.supervisor-detail .supervisor-detail-header{align-items:flex-start;flex-direction:column}.supervisor-detail-actions{width:100%}.supervisor-detail-actions .btn{flex:1}.supervisor-detail-card{padding:1rem}.supervisor-detail-meta-grid{grid-template-columns:1fr 1fr}.supervisor-intern-actions{flex-direction:column}}
+
+/* Daily log review workflow */
+.supervisor-log-actions{display:flex;justify-content:flex-end;align-items:flex-start;gap:.35rem}
+.supervisor-detail-return{padding:.35rem .65rem;border:1px solid #f0c36d;background:#fffaf0;color:#9a6700;font-size:.68rem;font-weight:700}
+.supervisor-revision-details{position:relative}
+.supervisor-revision-details summary{list-style:none;cursor:pointer}
+.supervisor-revision-details summary::-webkit-details-marker{display:none}
+.supervisor-revision-form{position:absolute;z-index:20;right:0;top:calc(100% + .4rem);width:270px;padding:.7rem;border:1px solid #e3e8ef;border-radius:10px;background:#fff;box-shadow:0 10px 30px rgba(15,23,42,.12)}
+.supervisor-revision-form textarea{width:100%;resize:vertical;border:1px solid #d7dee8;border-radius:7px;padding:.55rem;font-size:.7rem;outline:none}
+.supervisor-revision-form textarea:focus{border-color:#8bb4ff;box-shadow:0 0 0 .15rem rgba(23,105,255,.08)}
+.supervisor-detail-return-confirm{width:100%;margin-top:.5rem;background:#9a6700;border-color:#9a6700;color:#fff;font-size:.68rem;font-weight:700}
+.supervisor-detail-return-confirm:hover{background:#7c5200;border-color:#7c5200;color:#fff}
+@media(max-width:767.98px){.supervisor-revision-form{position:fixed;left:1rem;right:1rem;bottom:1rem;top:auto;width:auto}}

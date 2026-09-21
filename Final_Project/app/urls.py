@@ -13,7 +13,9 @@ urlpatterns = [
     path("profile/update/", views.student_profile_update, name="student_profile_update"),
 
     path("log/add/", views.add_daily_log, name="add_daily_log"),
+    path("log/<int:log_id>/edit/", views.edit_daily_log, name="edit_daily_log"),
     path("log/approve/<int:log_id>/", views.approve_log, name="approve_log"),
+    path("log/revision/<int:log_id>/", views.request_log_revision, name="request_log_revision"),
 
     path(
         "evaluate/<int:internship_id>/",

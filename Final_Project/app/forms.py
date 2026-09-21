@@ -109,6 +109,20 @@ class DailyLogForm(forms.ModelForm):
         return cleaned_data
 
 
+class DailyLogReviewForm(forms.Form):
+    remarks = forms.CharField(
+        label="Feedback",
+        required=True,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "class": "form-control",
+                "placeholder": "Explain what needs to be corrected...",
+            }
+        ),
+    )
+
+
 class EvaluationForm(forms.ModelForm):
     class Meta:
         model = Evaluation

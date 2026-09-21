@@ -15,6 +15,7 @@ from .forms import (
     CompanyForm,
     CoordinatorProfileForm,
     DailyLogForm,
+    DailyLogReviewForm,
     EvaluationForm,
     InternshipDeploymentForm,
     RegistrationForm,
@@ -352,6 +353,50 @@ def add_daily_log(request):
 
 
 @login_required
+def edit_daily_log(request, log_id):
+    if not is_student(request.user):
+        return redirect("dashboard")
+
+    log = get_object_or_404(
+        DailyLog.objects.select_related("internship__student"),
+        id=log_id,
+        internship__student__user=request.user,
+    )
+
+    if log.review_status != "revision_requested":
+        messages.info(request, "Only logs returned for correction can be edited.")
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = DailyLogForm(request.POST, internship=log.internship, instance=log)
+        if form.is_valid():
+            updated_log = form.save(commit=False)
+            updated_log.is_verified = False
+            updated_log.review_status = "pending"
+            updated_log.review_remarks = ""
+            updated_log.save(update_fields=[
+                "date",
+                "time_in",
+                "time_out",
+                "hours_rendered",
+                "work_description",
+                "is_verified",
+                "review_status",
+                "review_remarks",
+            ])
+            messages.success(request, "Corrected daily log resubmitted for review.")
+            return redirect("dashboard")
+    else:
+        form = DailyLogForm(instance=log, internship=log.internship)
+
+    return render(
+        request,
+        "app/add_daily_log.html",
+        {"form": form, "is_revision": True, "review_remarks": log.review_remarks},
+    )
+
+
+@login_required
 @require_POST
 def approve_log(request, log_id):
     if not is_supervisor(request.user):
@@ -367,18 +412,53 @@ def approve_log(request, log_id):
         messages.error(request, "You are not authorized to approve this log.")
         return redirect("dashboard")
 
-    if log.is_verified:
+    if log.review_status == "approved" or log.is_verified:
         messages.info(request, "This log has already been approved.")
-        return redirect("dashboard")
+        return redirect("supervisor_intern_detail", internship_id=log.internship_id)
 
     log.is_verified = True
-    log.save(update_fields=["is_verified"])
+    log.review_status = "approved"
+    log.review_remarks = ""
+    log.save(update_fields=["is_verified", "review_status", "review_remarks"])
 
     messages.success(
         request,
         f"Log for {log.internship.student.user.first_name} approved.",
     )
-    return redirect("dashboard")
+    return redirect("supervisor_intern_detail", internship_id=log.internship_id)
+
+
+@login_required
+@require_POST
+def request_log_revision(request, log_id):
+    if not is_supervisor(request.user):
+        messages.error(request, "Only assigned supervisors can return daily logs.")
+        return redirect("dashboard")
+
+    log = get_object_or_404(
+        DailyLog.objects.select_related("internship__student__user"),
+        id=log_id,
+    )
+
+    if not can_manage_internship(request.user, log.internship):
+        messages.error(request, "You are not authorized to return this log.")
+        return redirect("dashboard")
+
+    form = DailyLogReviewForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Feedback is required when returning a log.")
+        return redirect("supervisor_intern_detail", internship_id=log.internship_id)
+
+    log.is_verified = False
+    log.review_status = "revision_requested"
+    log.review_remarks = form.cleaned_data["remarks"]
+    log.save(update_fields=["is_verified", "review_status", "review_remarks"])
+
+    messages.success(
+        request,
+        "Daily log returned to the student for correction.",
+    )
+    return redirect("supervisor_intern_detail", internship_id=log.internship_id)
 
 
 @login_required

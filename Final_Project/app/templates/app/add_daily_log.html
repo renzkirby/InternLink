@@ -1,19 +1,24 @@
-{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
+{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block title %}{% if is_revision %}Correct Daily Log{% else %}Add Daily Log{% endif %} | InternLink{% endblock %} {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow">
-      <div class="card-header bg-success text-white">
-        <h4 class="mb-0">Daily Time Record (DTR)</h4>
+  <div class="col-md-7">
+    <div class="il-card">
+      <div class="il-card-header">
+        <div class="fw-bold">{% if is_revision %}Correct daily log{% else %}Daily Time Record{% endif %}</div>
+        <div class="text-muted small">{% if is_revision %}Update the returned entry and resubmit it for supervisor review.{% else %}Record your internship activities and rendered hours.{% endif %}</div>
       </div>
-      <div class="card-body">
+      <div class="il-card-body">
+        {% if is_revision %}
+        <div class="alert app-alert app-alert-warning mb-4">
+          <div class="fw-bold"><i class="bi bi-exclamation-circle me-1"></i> Supervisor feedback</div>
+          <div class="small mt-1">{{ review_remarks }}</div>
+        </div>
+        {% endif %}
         <form method="POST">
-          {% csrf_token %} {{ form|crispy }}
-
-          <div class="d-grid gap-2 mt-4">
-            <button type="submit" class="btn btn-success">Submit Log</button>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary"
-              >Cancel</a
-            >
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">{% if is_revision %}Resubmit for review{% else %}Submit Log{% endif %}</button>
           </div>
         </form>
       </div>

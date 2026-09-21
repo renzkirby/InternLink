@@ -229,10 +229,14 @@
               <td class="text-nowrap">{{ log.hours_rendered }} hrs</td>
               <td class="text-muted">{{ log.work_description|truncatechars:60 }}</td>
               <td class="text-end">
-                {% if log.is_verified %}
+                {% if log.review_status == "approved" %}
                 <span class="status-pill status-completed">
                   <i class="bi bi-check-circle-fill"></i> Approved
                 </span>
+                {% elif log.review_status == "revision_requested" %}
+                <a href="{% url 'edit_daily_log' log.id %}" class="status-pill status-pending text-decoration-none">
+                  <i class="bi bi-pencil-square"></i> Needs correction
+                </a>
                 {% else %}
                 <span class="status-pill status-pending">
                   <i class="bi bi-hourglass-split"></i> Pending
