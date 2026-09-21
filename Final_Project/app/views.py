@@ -205,17 +205,60 @@ def dashboard_view(request):
         if supervisor_profile is None:
             return redirect("complete_supervisor_profile")
 
+        my_internships = (
+            Internship.objects.select_related("student__user", "company")
+            .prefetch_related("daily_logs")
+            .filter(supervisor=supervisor_profile, status="ongoing")
+            .order_by("start_date", "id")
+        )
+
         pending_logs = (
-            DailyLog.objects.select_related("internship__student__user")
+            DailyLog.objects.select_related(
+                "internship__student__user",
+                "internship__company",
+            )
             .filter(
                 internship__supervisor=supervisor_profile,
                 is_verified=False,
             )
-            .order_by("date")
+            .order_by("date", "id")
         )
-        my_internships = (
-            Internship.objects.select_related("student__user", "company")
-            .filter(supervisor=supervisor_profile, status="ongoing")
+
+        pending_logs_count = pending_logs.count()
+        pending_hours = sum(
+            (log.hours_rendered or 0 for log in pending_logs),
+            0,
+        )
+        pending_evaluations = 0
+
+        for internship in my_internships:
+            approved_hours = sum(
+                (
+                    log.hours_rendered or 0
+                    for log in internship.daily_logs.all()
+                    if log.is_verified
+                ),
+                0,
+            )
+            internship.approved_hours = approved_hours
+            internship.progress_percent = (
+                min(
+                    round(
+                        (float(approved_hours) / internship.required_hours) * 100,
+                        1,
+                    ),
+                    100,
+                )
+                if internship.required_hours
+                else 0
+            )
+
+            if not internship.has_evaluation:
+                pending_evaluations += 1
+
+        total_approved_hours = sum(
+            (internship.approved_hours for internship in my_internships),
+            0,
         )
 
         return render(
@@ -223,8 +266,12 @@ def dashboard_view(request):
             "app/supervisor_dashboard.html",
             {
                 "supervisor": supervisor_profile,
-                "pending_logs": pending_logs,
+                "pending_logs": pending_logs[:10],
+                "pending_logs_count": pending_logs_count,
+                "pending_hours": pending_hours,
                 "my_internships": my_internships,
+                "pending_evaluations": pending_evaluations,
+                "total_approved_hours": total_approved_hours,
             },
         )
 
