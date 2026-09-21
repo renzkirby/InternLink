@@ -50,6 +50,12 @@ urlpatterns = [
     ),
 
     path(
+        "supervisor/intern/<int:internship_id>/",
+        views.supervisor_intern_detail,
+        name="supervisor_intern_detail",
+    ),
+
+    path(
         "supervisor/setup/",
         views.complete_supervisor_profile,
         name="complete_supervisor_profile",
