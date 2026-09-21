@@ -1954,3 +1954,74 @@ a {
         padding: 1rem;
     }
 }
+
+/* Supervisor intern detail */
+.supervisor-detail{padding:1.5rem 0 3rem}
+.supervisor-detail .supervisor-detail-header{display:flex;justify-content:space-between;gap:1rem;align-items:flex-end;margin-bottom:1.15rem}
+.supervisor-detail-back{display:inline-flex;gap:.4rem;align-items:center;color:#64748b;font-size:.76rem;font-weight:650;text-decoration:none;margin-bottom:.75rem}
+.supervisor-detail-back:hover{color:#1769ff}
+.supervisor-detail-eyebrow{color:#1769ff;font-size:.67rem;font-weight:800;letter-spacing:.08em}
+.supervisor-detail h1{margin:.2rem 0 0;color:#15233f;font-size:clamp(1.8rem,4vw,2.3rem);font-weight:650;letter-spacing:-.035em}
+.supervisor-detail-header p{margin:.25rem 0 0;color:#64748b;font-size:.8rem}
+.supervisor-detail-actions{display:flex;gap:.55rem}
+.supervisor-dtr-btn,.supervisor-evaluate-btn{font-size:.76rem;font-weight:750;border-radius:9px}
+.supervisor-dtr-btn{border:1px solid #d5dde8;background:#fff;color:#475569}
+.supervisor-evaluate-btn{border:1px solid #1769ff;background:#1769ff;color:#fff}
+.supervisor-evaluate-btn:hover{background:#0b56d0;border-color:#0b56d0;color:#fff}
+.supervisor-detail-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr);gap:1rem;align-items:start}
+.supervisor-detail-card{padding:1.15rem;margin-bottom:1rem}
+.supervisor-detail-card-heading{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:1rem}
+.supervisor-detail-card-heading h2{margin:.18rem 0 0;color:#15233f;font-size:1rem;font-weight:750}
+.supervisor-detail-card-heading p{margin:.25rem 0 0;color:#8490a3;font-size:.71rem}
+.supervisor-detail-status{white-space:nowrap}
+.supervisor-detail-progress{padding:1rem;border:1px solid #e7ecf2;border-radius:11px;background:#f8fafc}
+.supervisor-detail-progress-top{display:flex;justify-content:space-between;gap:1rem;color:#334155;font-size:.78rem}
+.supervisor-detail-progress-top span{font-weight:800;color:#1769ff}
+.supervisor-detail-progress-bar{height:7px;margin-top:.55rem;background:#e4eaf2}
+.supervisor-detail-progress-bar .progress-bar{background:#1769ff}
+.supervisor-detail-progress-note{margin-top:.45rem;color:#8490a3;font-size:.68rem}
+.supervisor-detail-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:1rem}
+.supervisor-detail-meta-grid>div{padding:.75rem;border:1px solid #edf1f6;border-radius:9px}
+.supervisor-detail-meta-grid span,.supervisor-side-list span{display:block;color:#8490a3;font-size:.66rem}
+.supervisor-detail-meta-grid strong{display:block;margin-top:.2rem;color:#334155;font-size:.73rem}
+.supervisor-detail-table-wrap{overflow-x:auto}
+.supervisor-detail-table-wrap table{min-width:700px}
+.supervisor-detail-task{max-width:280px;color:#64748b}
+.supervisor-detail-approved,.supervisor-detail-pending{white-space:nowrap;font-size:.64rem}
+.supervisor-detail-approved{color:#18794e;background:#eaf8f0}
+.supervisor-detail-pending{color:#9a6700;background:#fff5d9}
+.supervisor-detail-approve{padding:.35rem .65rem;border-radius:7px;background:#1769ff;color:#fff;font-size:.68rem;font-weight:700}
+.supervisor-detail-approve:hover{background:#0b56d0;color:#fff}
+.supervisor-detail-empty{text-align:center;padding:2rem 1rem;color:#8490a3}
+.supervisor-detail-empty i{display:block;font-size:1.4rem;margin-bottom:.5rem;color:#94a3b8}
+.supervisor-detail-empty strong{display:block;color:#475569;font-size:.78rem}
+.supervisor-detail-empty p{margin:.25rem 0 0;font-size:.69rem}
+.supervisor-document-list{display:grid;gap:.65rem}
+.supervisor-document-item{display:flex;align-items:center;gap:.7rem;padding:.7rem;border:1px solid #edf1f6;border-radius:9px}
+.supervisor-document-icon{flex:0 0 34px;width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:#eef4ff;color:#1769ff}
+.supervisor-document-info{min-width:0;flex:1}
+.supervisor-document-info strong{display:block;color:#334155;font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.supervisor-document-info span{display:block;margin-top:.15rem;color:#8490a3;font-size:.65rem}
+.supervisor-document-btn{padding:.35rem .65rem;border:1px solid #d5dde8;color:#475569;background:#fff;font-size:.67rem;font-weight:700}
+.supervisor-evaluation-complete{text-align:center;padding:1.2rem .5rem}
+.supervisor-evaluation-score{font-size:2rem;font-weight:800;color:#1769ff;letter-spacing:-.04em}
+.supervisor-evaluation-score span{font-size:.7rem;color:#8490a3;font-weight:600}
+.supervisor-evaluation-complete strong{display:block;margin-top:.35rem;color:#334155;font-size:.76rem}
+.supervisor-evaluation-complete p{margin:.2rem 0 0;color:#8490a3;font-size:.67rem}
+.supervisor-evaluation-due{padding:.35rem 0}
+.supervisor-evaluation-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:#fff5d9;color:#9a6700;margin-bottom:.75rem}
+.supervisor-evaluation-due strong{display:block;color:#334155;font-size:.78rem}
+.supervisor-evaluation-due p{margin:.3rem 0 .85rem;color:#8490a3;font-size:.69rem;line-height:1.5}
+.supervisor-evaluate-full{width:100%;background:#1769ff;color:#fff;border-color:#1769ff;font-size:.72rem;font-weight:750}
+.supervisor-evaluate-full:hover{background:#0b56d0;color:#fff}
+.supervisor-side-name{margin:.3rem 0 1rem;color:#15233f;font-size:1rem;font-weight:750}
+.supervisor-side-list{display:grid;gap:.7rem}
+.supervisor-side-list>div{padding-bottom:.7rem;border-bottom:1px solid #edf1f6}
+.supervisor-side-list>div:last-child{padding-bottom:0;border-bottom:0}
+.supervisor-side-list strong{display:block;margin-top:.15rem;color:#475569;font-size:.72rem;overflow-wrap:anywhere}
+.supervisor-intern-actions{display:flex;gap:.5rem;margin-top:.65rem}
+.supervisor-view-link,.supervisor-evaluate-link{font-size:.68rem;font-weight:700;text-decoration:none}
+.supervisor-view-link{color:#1769ff}
+.supervisor-evaluate-link{color:#64748b}
+@media(max-width:950px){.supervisor-detail-grid{grid-template-columns:1fr}.supervisor-detail-meta-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767.98px){.supervisor-detail{padding-top:1rem}.supervisor-detail .supervisor-detail-header{align-items:flex-start;flex-direction:column}.supervisor-detail-actions{width:100%}.supervisor-detail-actions .btn{flex:1}.supervisor-detail-card{padding:1rem}.supervisor-detail-meta-grid{grid-template-columns:1fr 1fr}.supervisor-intern-actions{flex-direction:column}}
