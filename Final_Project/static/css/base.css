@@ -961,6 +961,10 @@ a {
 
 .supervisor-card {
     overflow: hidden;
+    border: 1px solid #dfe6ef;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.045);
 }
 
 .supervisor-card-header {
@@ -991,6 +995,26 @@ a {
 
 .supervisor-table {
     min-width: 760px;
+}
+.supervisor-status-evaluated {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.supervisor-status-due {
+    color: #1d4ed8;
+    background: #e8f0ff;
+}
+
+.supervisor-progress {
+    height: 6px;
+    background: #e8edf4;
+    border-radius: 999px;
+}
+
+.supervisor-progress .progress-bar {
+    background: #1769ff;
+    border-radius: inherit;
 }
 
 .supervisor-task {
