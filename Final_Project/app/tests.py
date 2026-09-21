@@ -134,6 +134,80 @@ class BackendIntegrityTests(TestCase):
         with self.assertRaises(ValidationError):
             log.full_clean()
 
+    def test_supervisor_can_return_log_for_correction(self):
+        internship = Internship.objects.create(
+            student=self.student,
+            company=self.company,
+            supervisor=self.supervisor,
+            start_date=date.today() - timedelta(days=1),
+            end_date=date.today() + timedelta(days=30),
+            required_hours=600,
+            status="ongoing",
+        )
+        log = DailyLog.objects.create(
+            internship=internship,
+            date=date.today(),
+            time_in=time(8, 0),
+            time_out=time(17, 0),
+            work_description="Work completed.",
+        )
+
+        self.client.login(username="supervisor1", password="StrongPass123!")
+        response = self.client.post(
+            reverse("request_log_revision", args=[log.id]),
+            {"remarks": "Please provide more detail about the testing tasks."},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("supervisor_intern_detail", args=[internship.id]),
+        )
+        log.refresh_from_db()
+        self.assertFalse(log.is_verified)
+        self.assertEqual(log.review_status, "revision_requested")
+        self.assertEqual(
+            log.review_remarks,
+            "Please provide more detail about the testing tasks.",
+        )
+
+    def test_student_can_resubmit_returned_log(self):
+        internship = Internship.objects.create(
+            student=self.student,
+            company=self.company,
+            supervisor=self.supervisor,
+            start_date=date.today() - timedelta(days=1),
+            end_date=date.today() + timedelta(days=30),
+            required_hours=600,
+            status="ongoing",
+        )
+        log = DailyLog.objects.create(
+            internship=internship,
+            date=date.today(),
+            time_in=time(8, 0),
+            time_out=time(17, 0),
+            work_description="Original entry.",
+        )
+        log.review_status = "revision_requested"
+        log.review_remarks = "Add more detail."
+        log.save(update_fields=["review_status", "review_remarks"])
+
+        self.client.login(username="student1", password="StrongPass123!")
+        response = self.client.post(
+            reverse("edit_daily_log", args=[log.id]),
+            {
+                "date": str(date.today()),
+                "time_in": "08:00",
+                "time_out": "17:00",
+                "work_description": "Updated entry with detailed testing tasks.",
+            },
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        log.refresh_from_db()
+        self.assertEqual(log.review_status, "pending")
+        self.assertFalse(log.is_verified)
+        self.assertEqual(log.review_remarks, "")
+
     def test_approve_log_requires_post(self):
         internship = Internship.objects.create(
             student=self.student,
@@ -162,6 +236,7 @@ class BackendIntegrityTests(TestCase):
         self.assertEqual(response.status_code, 405)
         log.refresh_from_db()
         self.assertFalse(log.is_verified)
+        self.assertEqual(log.review_status, "pending")
 
 
 class AuthorizationTests(TestCase):
