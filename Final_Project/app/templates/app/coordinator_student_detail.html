@@ -1,112 +1,247 @@
-{% extends 'app/base.html' %} {% block content %}
-<div class="container">
-  <div class="mb-4">
-    <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">
-      &larr; Back to Dashboard
-    </a>
-    <h2 class="mt-2">{{ internship.student.user.get_full_name }}</h2>
-    <span class="badge bg-primary">{{ internship.student.course }}</span>
-    <span class="badge bg-secondary">{{ internship.company.name }}</span>
+{% extends 'app/base.html' %}
+{% block title %}{{ student.user.get_full_name }} | InternLink{% endblock %}
+
+{% block content %}
+<div class="coordinator-detail">
+  <div class="detail-header">
+    <div>
+      <a href="{% url 'dashboard' %}" class="detail-back">
+        <i class="bi bi-arrow-left"></i> Back to dashboard
+      </a>
+      <div class="detail-eyebrow">INTERNSHIP PLACEMENT</div>
+      <h1>{{ student.user.get_full_name }}</h1>
+      <p>{{ student.course|default:"Course not set" }} · {{ internship.company.name }}</p>
+    </div>
+    <div class="detail-header-meta">
+      {% if internship.status == "ongoing" %}
+        <span class="status-pill detail-status-ongoing"><i class="bi bi-circle-fill"></i> Ongoing</span>
+      {% elif internship.status == "completed" %}
+        <span class="status-pill detail-status-completed"><i class="bi bi-check-circle-fill"></i> Completed</span>
+      {% else %}
+        <span class="status-pill detail-status-neutral">{{ internship.get_status_display }}</span>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="row">
-    <div class="col-md-5">
-      <div class="card shadow mb-4">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">Internship Progress</h5>
+  <div class="detail-meta-grid">
+    <div>
+      <span>Start date</span>
+      <strong>{{ internship.start_date|date:"M d, Y" }}</strong>
+    </div>
+    <div>
+      <span>End date</span>
+      <strong>{{ internship.end_date|date:"M d, Y" }}</strong>
+    </div>
+    <div>
+      <span>Required hours</span>
+      <strong>{{ internship.required_hours }} hrs</strong>
+    </div>
+    <div>
+      <span>Supervisor</span>
+      <strong>
+        {% if internship.supervisor %}
+          {{ internship.supervisor.user.get_full_name }}
+        {% else %}
+          Not assigned
+        {% endif %}
+      </strong>
+    </div>
+  </div>
+
+  <div class="detail-layout">
+    <main>
+      <section class="il-card detail-progress-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">INTERNSHIP PROGRESS</div>
+            <h2>Hours and daily logs</h2>
+          </div>
+          <strong class="detail-progress-percent">{{ progress_percent|floatformat:1 }}%</strong>
         </div>
-        <div class="card-body text-center">
-          <h1 class="display-4">{{ approved_hours }}</h1>
-          <p class="text-muted">Approved Hours / {{ internship.required_hours }}</p>
-          <div class="progress" style="height: 10px">
-            <div
-              class="progress-bar bg-success"
-              role="progressbar"
-              style="width: {% widthratio approved_hours internship.required_hours 100 %}%;"></div>
+
+        <div class="detail-progress-body">
+          <div class="detail-hours">
+            <strong>{{ approved_hours|floatformat:1 }}</strong>
+            <span>/ {{ internship.required_hours }} approved hours</span>
+          </div>
+          <div class="progress detail-progress">
+            <div class="progress-bar" style="width: {{ progress_percent }}%"></div>
+          </div>
+          <div class="detail-progress-footer">
+            <span>{{ total_logs }} total logs</span>
+            <span>{{ pending_logs }} awaiting approval</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card shadow">
-        <div
-          class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Submitted Documents</h5>
-          <span class="badge bg-light text-dark">{{ documents.count }}</span>
+      <section class="il-card detail-section-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">RECENT ACTIVITY</div>
+            <h2>Daily logs</h2>
+          </div>
+          <span class="dashboard-count">{{ total_logs }}</span>
         </div>
-        <div class="card-body p-0">
-          <ul class="list-group list-group-flush">
-            {% for doc in documents %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>{{ doc.get_report_type_display }}</strong>
-                <br />
-                <small class="text-muted">{{ doc.submitted_at|date:"M d, Y" }}</small>
-                {% if doc.week_number %}
-                <span class="badge bg-info text-dark">Week {{ doc.week_number }}</span>
-                {% endif %}
-              </div>
-              <a
-                href="{% url 'document_download' doc.id %}"
-                target="_blank"
-                class="btn btn-sm btn-outline-primary">
-                View
-              </a>
-            </li>
-            {% empty %}
-            <li class="list-group-item text-muted text-center py-4">
-              No documents uploaded yet.
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-7">
-      <div class="card shadow">
-        <div class="card-header bg-white">
-          <h5 class="mb-0">Recent Daily Logs</h5>
+        <div class="detail-table-wrap">
+          <table class="table app-table align-middle mb-0 detail-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Hours</th>
+                <th>Work summary</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in recent_logs %}
+              <tr>
+                <td><strong>{{ log.date|date:"M d, Y" }}</strong></td>
+                <td>{{ log.time_in|time:"H:i" }}–{{ log.time_out|time:"H:i" }}</td>
+                <td>{{ log.hours_rendered|floatformat:1 }}</td>
+                <td class="detail-work-summary">{{ log.work_description|truncatechars:70 }}</td>
+                <td>
+                  {% if log.is_verified %}
+                    <span class="status-pill detail-status-verified"><i class="bi bi-check-circle-fill"></i> Verified</span>
+                  {% else %}
+                    <span class="status-pill detail-status-pending"><i class="bi bi-clock-fill"></i> Pending</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5">
+                  <div class="detail-empty">
+                    <i class="bi bi-clock-history"></i>
+                    <strong>No daily logs yet</strong>
+                    <span>The student has not submitted any work logs.</span>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Date</th>
-                  <th>In</th>
-                  <th>Out</th>
-                  <th>Hrs</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for log in recent_logs %}
-                <tr>
-                  <td>{{ log.date|date:"M d" }}</td>
-                  <td>{{ log.time_in|time:"H:i" }}</td>
-                  <td>{{ log.time_out|time:"H:i" }}</td>
-                  <td>{{ log.hours_rendered }}</td>
-                  <td>
-                    {% if log.is_verified %}
-                    <span class="badge bg-success">Verified</span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark">Pending</span>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" class="text-center p-4 text-muted">
-                    No logs recorded.
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+      </section>
+
+      <section class="il-card detail-section-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">DOCUMENTS</div>
+            <h2>Submitted internship documents</h2>
+          </div>
+          <span class="dashboard-count">{{ documents|length }}</span>
+        </div>
+
+        <div class="detail-document-list">
+          {% for doc in documents %}
+          <div class="detail-document">
+            <div class="detail-document-icon"><i class="bi bi-file-earmark-text"></i></div>
+            <div class="detail-document-info">
+              <strong>{{ doc.title }}</strong>
+              <span>{{ doc.get_report_type_display }} · {{ doc.submitted_at|date:"M d, Y" }}{% if doc.week_number %} · Week {{ doc.week_number }}{% endif %}</span>
+            </div>
+            <a href="{% url 'document_download' doc.id %}" target="_blank" class="btn detail-view-btn">
+              <i class="bi bi-box-arrow-up-right me-1"></i> View
+            </a>
+          </div>
+          {% empty %}
+          <div class="detail-empty detail-document-empty">
+            <i class="bi bi-folder2-open"></i>
+            <strong>No documents submitted</strong>
+            <span>Required internship documents will appear here after upload.</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+
+    <aside>
+      <section class="il-card detail-section-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">ASSIGNMENT</div>
+            <h2>Placement details</h2>
           </div>
         </div>
-      </div>
-    </div>
+        <div class="detail-info-list">
+          <div>
+            <span>Company</span>
+            <strong>{{ internship.company.name }}</strong>
+          </div>
+          <div>
+            <span>Address</span>
+            <strong>{{ internship.company.address|default:"Not provided" }}</strong>
+          </div>
+          <div>
+            <span>Contact person</span>
+            <strong>{{ internship.company.contact_person|default:"Not provided" }}</strong>
+          </div>
+          <div>
+            <span>Supervisor</span>
+            <strong>
+              {% if internship.supervisor %}
+                {{ internship.supervisor.user.get_full_name }}
+              {% else %}
+                Not assigned
+              {% endif %}
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="il-card detail-section-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">EVALUATIONS</div>
+            <h2>Evaluation status</h2>
+          </div>
+        </div>
+
+        <div class="detail-evaluation-list">
+          <div class="detail-evaluation">
+            <div class="detail-evaluation-icon"><i class="bi bi-person-badge"></i></div>
+            <div>
+              <strong>Supervisor evaluation</strong>
+              {% if supervisor_evaluation %}
+                <span class="detail-evaluation-done">Submitted {{ supervisor_evaluation.created_at|date:"M d, Y" }}</span>
+              {% else %}
+                <span class="detail-evaluation-pending">Pending submission</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="detail-evaluation">
+            <div class="detail-evaluation-icon"><i class="bi bi-mortarboard"></i></div>
+            <div>
+              <strong>Coordinator evaluation</strong>
+              {% if coordinator_evaluation %}
+                <span class="detail-evaluation-done">Submitted {{ coordinator_evaluation.created_at|date:"M d, Y" }}</span>
+              {% else %}
+                <span class="detail-evaluation-pending">Not submitted</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="il-card detail-section-card detail-actions-card">
+        <div class="detail-card-header">
+          <div>
+            <div class="card-eyebrow">QUICK ACTIONS</div>
+            <h2>Placement tools</h2>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <a href="{% url 'generate_dtr' internship.id %}" class="detail-action">
+            <i class="bi bi-file-earmark-pdf"></i>
+            <span><strong>View official DTR</strong><small>Generate verified time record</small></span>
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </div>
+      </section>
+    </aside>
   </div>
 </div>
 {% endblock %}
