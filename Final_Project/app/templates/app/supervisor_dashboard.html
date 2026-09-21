@@ -111,7 +111,7 @@
       {% endif %}
     </section>
 
-    <aside class="app-card supervisor-card">
+    <aside class="il-card supervisor-card">
       <div class="supervisor-card-header">
         <div>
           <div class="card-eyebrow">YOUR INTERNS</div>
@@ -143,11 +143,16 @@
             <div class="progress-bar" style="width: {{ intern.progress_percent }}%"></div>
           </div>
 
-          {% if not intern.has_evaluation %}
-          <a href="{% url 'evaluate_student' intern.id %}" class="supervisor-evaluate-link">
-            <i class="bi bi-star me-1"></i> Complete evaluation
-          </a>
-          {% endif %}
+          <div class="supervisor-intern-actions">
+            <a href="{% url 'supervisor_intern_detail' intern.id %}" class="supervisor-view-link">
+              <i class="bi bi-eye me-1"></i> Review intern
+            </a>
+            {% if not intern.has_evaluation %}
+            <a href="{% url 'evaluate_student' intern.id %}" class="supervisor-evaluate-link">
+              <i class="bi bi-star me-1"></i> Complete evaluation
+            </a>
+            {% endif %}
+          </div>
         </div>
         {% empty %}
         <div class="supervisor-empty-state compact">
