@@ -1,87 +1,182 @@
-{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Deploy New Intern</h4>
-        </div>
-        <div class="card-body">
-          <form method="POST">
-            {% csrf_token %}
+{% extends 'app/base.html' %}
+{% load crispy_forms_tags %}
 
-            <h5 class="text-secondary mb-3">Student Information</h5>
-            <div class="mb-3">{{ form.student|as_crispy_field }}</div>
+{% block title %}Deploy Intern | InternLink{% endblock %}
 
-            <hr />
-
-            <h5 class="text-secondary mb-3">Placement Details</h5>
-            <div class="row">
-              <div class="col-md-6">{{ form.company|as_crispy_field }}</div>
-              <div class="col-md-6">{{ form.supervisor|as_crispy_field }}</div>
-            </div>
-            <div class="row">
-              <div class="col-md-6">{{ form.required_hours|as_crispy_field }}</div>
-              <div class="col-md-6">{{ form.start_date|as_crispy_field }}</div>
-            </div>
-
-            <div class="d-grid gap-2 mt-4">
-              <button
-                type="submit"
-                class="btn btn-primary btn-lg">
-                Deploy Intern
-              </button>
-              <a
-                href="{% url 'dashboard' %}"
-                class="btn btn-outline-secondary"
-                >Cancel</a
-              >
-            </div>
-          </form>
-        </div>
-      </div>
+{% block content %}
+<div class="coordinator-deploy">
+  <div class="deploy-header">
+    <div>
+      <a href="{% url 'dashboard' %}" class="deploy-back">
+        <i class="bi bi-arrow-left"></i> Back to dashboard
+      </a>
+      <div class="deploy-eyebrow">PLACEMENT MANAGEMENT</div>
+      <h1>Deploy a new intern</h1>
+      <p>Create an internship placement for a student in your school.</p>
     </div>
   </div>
+
+  <div class="deploy-layout">
+    <main>
+      <form method="POST" class="il-card deploy-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger deploy-alert">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <section class="deploy-section">
+          <div class="deploy-section-heading">
+            <span class="deploy-section-number">01</span>
+            <div>
+              <div class="deploy-section-eyebrow">STUDENT</div>
+              <h2>Choose the intern</h2>
+              <p>Only eligible students from your school are listed.</p>
+            </div>
+          </div>
+          <div class="deploy-field">
+            {{ form.student|as_crispy_field }}
+          </div>
+        </section>
+
+        <section class="deploy-section">
+          <div class="deploy-section-heading">
+            <span class="deploy-section-number">02</span>
+            <div>
+              <div class="deploy-section-eyebrow">PLACEMENT</div>
+              <h2>Assign the workplace</h2>
+              <p>Select a partner company, then choose one of its supervisors.</p>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6 deploy-field">
+              {{ form.company|as_crispy_field }}
+            </div>
+            <div class="col-md-6 deploy-field">
+              {{ form.supervisor|as_crispy_field }}
+              <div class="deploy-field-help" id="supervisor-help">
+                Select a company first to load its supervisors.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="deploy-section deploy-section-last">
+          <div class="deploy-section-heading">
+            <span class="deploy-section-number">03</span>
+            <div>
+              <div class="deploy-section-eyebrow">SCHEDULE</div>
+              <h2>Set internship requirements</h2>
+              <p>Define the required hours and starting date for this placement.</p>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6 deploy-field">
+              {{ form.required_hours|as_crispy_field }}
+              <div class="deploy-field-help">The standard internship requirement is 600 hours.</div>
+            </div>
+            <div class="col-md-6 deploy-field">
+              {{ form.start_date|as_crispy_field }}
+            </div>
+          </div>
+        </section>
+
+        <div class="deploy-form-footer">
+          <a href="{% url 'dashboard' %}" class="btn deploy-cancel-btn">Cancel</a>
+          <button type="submit" class="btn deploy-submit-btn">
+            <i class="bi bi-person-plus-fill me-1"></i> Deploy intern
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <aside>
+      <section class="il-card deploy-summary-card">
+        <div class="deploy-summary-heading">
+          <div class="deploy-summary-icon"><i class="bi bi-diagram-3"></i></div>
+          <div>
+            <div class="deploy-section-eyebrow">PLACEMENT WORKFLOW</div>
+            <h2>Before you deploy</h2>
+          </div>
+        </div>
+        <div class="deploy-check-list">
+          <div><i class="bi bi-check-circle-fill"></i><span>Student belongs to your school</span></div>
+          <div><i class="bi bi-check-circle-fill"></i><span>Company is a school partner</span></div>
+          <div><i class="bi bi-check-circle-fill"></i><span>Supervisor belongs to that company</span></div>
+          <div><i class="bi bi-check-circle-fill"></i><span>Student has no active internship</span></div>
+        </div>
+      </section>
+
+      <section class="il-card deploy-tip-card">
+        <div class="deploy-tip-icon"><i class="bi bi-info-circle"></i></div>
+        <div>
+          <strong>Why supervisor selection depends on company</strong>
+          <p>InternLink limits supervisor choices to people assigned to the selected partner company.</p>
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
+
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const companySelect = document.getElementById("id_company");
-    const supervisorSelect = document.getElementById("id_supervisor");
+document.addEventListener("DOMContentLoaded", function () {
+  const companySelect = document.getElementById("id_company");
+  const supervisorSelect = document.getElementById("id_supervisor");
+  const supervisorHelp = document.getElementById("supervisor-help");
 
-    if (!companySelect.value) {
-      supervisorSelect.innerHTML = '<option value="">---------</option>';
-      supervisorSelect.disabled = true;
-    }
+  if (!companySelect || !supervisorSelect) return;
 
-    companySelect.addEventListener("change", function () {
-      const companyId = this.value;
+  function resetSupervisor(message) {
+    supervisorSelect.innerHTML = '<option value="">---------</option>';
+    supervisorSelect.disabled = true;
+    if (supervisorHelp) supervisorHelp.textContent = message;
+  }
 
-      supervisorSelect.innerHTML = '<option value="">Loading...</option>';
-      supervisorSelect.disabled = true;
+  function loadSupervisors(companyId) {
+    supervisorSelect.innerHTML = '<option value="">Loading supervisors...</option>';
+    supervisorSelect.disabled = true;
+    if (supervisorHelp) supervisorHelp.textContent = "Loading supervisors for this company...";
 
-      if (companyId) {
-        fetch(`/ajax/get-supervisors/?company_id=${companyId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            supervisorSelect.innerHTML = '<option value="">---------</option>';
-            supervisorSelect.disabled = false;
-
-            data.forEach((supervisor) => {
-              const option = document.createElement("option");
-              option.value = supervisor.id;
-              option.textContent = supervisor.name;
-              supervisorSelect.appendChild(option);
-            });
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            supervisorSelect.innerHTML = '<option value="">Error loading supervisors</option>';
-          });
-      } else {
+    fetch("{% url 'get_supervisors' %}?company_id=" + encodeURIComponent(companyId))
+      .then(function (response) {
+        if (!response.ok) throw new Error("Unable to load supervisors");
+        return response.json();
+      })
+      .then(function (data) {
         supervisorSelect.innerHTML = '<option value="">---------</option>';
-        supervisorSelect.disabled = true;
-      }
-    });
+        data.forEach(function (supervisor) {
+          const option = document.createElement("option");
+          option.value = supervisor.id;
+          option.textContent = supervisor.name;
+          supervisorSelect.appendChild(option);
+        });
+        supervisorSelect.disabled = data.length === 0;
+        if (supervisorHelp) {
+          supervisorHelp.textContent = data.length
+            ? "Choose a supervisor assigned to this company."
+            : "No supervisors are currently assigned to this company.";
+        }
+      })
+      .catch(function () {
+        resetSupervisor("Unable to load supervisors. Please try again.");
+      });
+  }
+
+  if (!companySelect.value) {
+    resetSupervisor("Select a company first to load its supervisors.");
+  } else {
+    loadSupervisors(companySelect.value);
+  }
+
+  companySelect.addEventListener("change", function () {
+    if (this.value) {
+      loadSupervisors(this.value);
+    } else {
+      resetSupervisor("Select a company first to load its supervisors.");
+    }
   });
+});
 </script>
 {% endblock %}
