@@ -1,31 +1,125 @@
-{% extends 'app/base.html' %} {% load crispy_forms_tags %} {% block content %}
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-header bg-success text-white">
-          <h4 class="mb-0">Add Industry Partner</h4>
-        </div>
-        <div class="card-body">
-          <form method="POST">
-            {% csrf_token %} {{ form|crispy }}
+{% extends 'app/base.html' %}
+{% load crispy_forms_tags %}
 
-            <div class="d-grid gap-2 mt-4">
-              <button
-                type="submit"
-                class="btn btn-success btn-lg">
-                Save Company
-              </button>
-              <a
-                href="{% url 'dashboard' %}"
-                class="btn btn-outline-secondary"
-                >Cancel</a
-              >
-            </div>
-          </form>
-        </div>
-      </div>
+{% block title %}Add Industry Partner | InternLink{% endblock %}
+
+{% block content %}
+<div class="coordinator-company">
+  <div class="company-header">
+    <div>
+      <a href="{% url 'dashboard' %}" class="company-back">
+        <i class="bi bi-arrow-left"></i> Back to dashboard
+      </a>
+      <div class="company-eyebrow">PARTNER MANAGEMENT</div>
+      <h1>Add an industry partner</h1>
+      <p>Register a company so it can host internship placements for students in your school.</p>
     </div>
+  </div>
+
+  <div class="company-layout">
+    <main>
+      <form method="POST" class="il-card company-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger company-alert">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <section class="company-section">
+          <div class="company-section-heading">
+            <span class="company-section-number">01</span>
+            <div>
+              <div class="company-section-eyebrow">ORGANIZATION</div>
+              <h2>Company information</h2>
+              <p>Use the official company name and workplace address.</p>
+            </div>
+          </div>
+
+          <div class="company-field">
+            {{ form.name|as_crispy_field }}
+          </div>
+          <div class="company-field company-field-spaced">
+            {{ form.address|as_crispy_field }}
+          </div>
+        </section>
+
+        <section class="company-section company-section-last">
+          <div class="company-section-heading">
+            <span class="company-section-number">02</span>
+            <div>
+              <div class="company-section-eyebrow">CONTACT</div>
+              <h2>Industry partner contact</h2>
+              <p>These details help coordinators and students identify the company's point of contact.</p>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6 company-field">
+              {{ form.contact_person|as_crispy_field }}
+            </div>
+            <div class="col-md-6 company-field">
+              {{ form.contact_number|as_crispy_field }}
+            </div>
+            <div class="col-12 company-field">
+              {{ form.contact_email|as_crispy_field }}
+            </div>
+          </div>
+        </section>
+
+        <div class="company-form-footer">
+          <a href="{% url 'dashboard' %}" class="btn company-cancel-btn">Cancel</a>
+          <button type="submit" class="btn company-submit-btn">
+            <i class="bi bi-building-add me-1"></i> Add industry partner
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <aside class="company-sidebar">
+      <section class="il-card company-info-card">
+        <div class="company-info-heading">
+          <div class="company-info-icon"><i class="bi bi-building-check"></i></div>
+          <div>
+            <div class="company-section-eyebrow">PARTNER RECORD</div>
+            <h2>What happens next?</h2>
+          </div>
+        </div>
+
+        <div class="company-step-list">
+          <div class="company-step">
+            <span>1</span>
+            <div>
+              <strong>Company is added</strong>
+              <p>The partner becomes available to coordinators in your school.</p>
+            </div>
+          </div>
+          <div class="company-step">
+            <span>2</span>
+            <div>
+              <strong>Supervisor is linked</strong>
+              <p>Supervisors can select this company when completing their profile.</p>
+            </div>
+          </div>
+          <div class="company-step">
+            <span>3</span>
+            <div>
+              <strong>Intern can be deployed</strong>
+              <p>The company can then be selected during internship deployment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="il-card company-tip-card">
+        <div class="company-tip-icon"><i class="bi bi-shield-check"></i></div>
+        <div>
+          <strong>School-scoped partner records</strong>
+          <p>InternLink automatically associates this company with your coordinator school. Companies from other schools cannot be selected in your placement workflow.</p>
+        </div>
+      </section>
+    </aside>
   </div>
 </div>
 {% endblock %}
