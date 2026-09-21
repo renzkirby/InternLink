@@ -1684,3 +1684,273 @@ a {
         padding: 1rem;
     }
 }
+
+/* Coordinator industry partner */
+.coordinator-company {
+    padding: 1.5rem 0 3rem;
+}
+
+.coordinator-company .company-header { margin-bottom: 1.1rem; }
+
+.coordinator-company .company-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .8rem;
+    color: #64748b;
+    font-size: .76rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.coordinator-company .company-back:hover { color: #1769ff; }
+
+.coordinator-company .company-eyebrow,
+.coordinator-company .company-section-eyebrow {
+    color: #1769ff;
+    font-size: .67rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.coordinator-company .company-header h1 {
+    margin: .2rem 0 0;
+    color: #15233f;
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    font-weight: 650;
+    letter-spacing: -.035em;
+}
+
+.coordinator-company .company-header p {
+    margin: .3rem 0 0;
+    color: #64748b;
+    font-size: .84rem;
+}
+
+.coordinator-company .company-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(280px, .75fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.coordinator-company .company-form {
+    overflow: hidden;
+}
+
+.coordinator-company .company-section {
+    padding: 1.25rem 1.35rem;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.coordinator-company .company-section-last { border-bottom: 0; }
+
+.coordinator-company .company-section-heading {
+    display: flex;
+    gap: .8rem;
+    margin-bottom: 1.05rem;
+}
+
+.coordinator-company .company-section-number {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    color: #1769ff;
+    background: #eef4ff;
+    font-size: .7rem;
+    font-weight: 800;
+}
+
+.coordinator-company .company-section-heading h2 {
+    margin: .15rem 0 0;
+    color: #15233f;
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.coordinator-company .company-section-heading p {
+    margin: .25rem 0 0;
+    color: #8490a3;
+    font-size: .72rem;
+}
+
+.coordinator-company .company-field .form-label {
+    color: #334155;
+    font-size: .76rem;
+    font-weight: 700;
+}
+
+.coordinator-company .company-field .form-control {
+    min-height: 43px;
+    border-color: #d7dee8;
+    border-radius: 9px;
+    font-size: .8rem;
+}
+
+.coordinator-company .company-field textarea.form-control {
+    min-height: 82px;
+    resize: vertical;
+}
+
+.coordinator-company .company-field .form-control:focus {
+    border-color: #8bb4ff;
+    box-shadow: 0 0 0 .2rem rgba(23, 105, 255, .1);
+}
+
+.coordinator-company .company-field-spaced { margin-top: .95rem; }
+
+.coordinator-company .company-field .invalid-feedback { font-size: .7rem; }
+
+.coordinator-company .company-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: .65rem;
+    padding: 1rem 1.35rem;
+    background: #f8fafc;
+    border-top: 1px solid #e5eaf1;
+}
+
+.coordinator-company .company-cancel-btn {
+    min-width: 92px;
+    border: 1px solid #d5dde8;
+    background: #fff;
+    color: #475569;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.coordinator-company .company-submit-btn {
+    min-width: 165px;
+    background: #1769ff;
+    border: 1px solid #1769ff;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 750;
+}
+
+.coordinator-company .company-submit-btn:hover {
+    background: #0b56d0;
+    border-color: #0b56d0;
+    color: #fff;
+}
+
+.coordinator-company .company-info-card,
+.coordinator-company .company-tip-card {
+    padding: 1.15rem;
+}
+
+.coordinator-company .company-info-heading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.coordinator-company .company-info-heading h2 {
+    margin: .18rem 0 0;
+    color: #15233f;
+    font-size: .95rem;
+    font-weight: 750;
+}
+
+.coordinator-company .company-info-icon,
+.coordinator-company .company-tip-icon {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    color: #1769ff;
+    background: #eef4ff;
+}
+
+.coordinator-company .company-step-list {
+    display: grid;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+.coordinator-company .company-step {
+    display: flex;
+    gap: .7rem;
+}
+
+.coordinator-company .company-step > span {
+    flex: 0 0 25px;
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #1769ff;
+    background: #eef4ff;
+    font-size: .67rem;
+    font-weight: 800;
+}
+
+.coordinator-company .company-step strong {
+    display: block;
+    color: #334155;
+    font-size: .76rem;
+}
+
+.coordinator-company .company-step p {
+    margin: .2rem 0 0;
+    color: #8490a3;
+    font-size: .69rem;
+    line-height: 1.5;
+}
+
+.coordinator-company .company-tip-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
+}
+
+.coordinator-company .company-tip-card strong {
+    display: block;
+    color: #334155;
+    font-size: .76rem;
+}
+
+.coordinator-company .company-tip-card p {
+    margin: .25rem 0 0;
+    color: #8490a3;
+    font-size: .69rem;
+    line-height: 1.5;
+}
+
+.coordinator-company .company-alert {
+    margin: 1rem 1.35rem 0;
+    font-size: .76rem;
+}
+
+@media (max-width: 950px) {
+    .coordinator-company .company-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .coordinator-company { padding-top: 1rem; }
+
+    .coordinator-company .company-section { padding: 1rem; }
+
+    .coordinator-company .company-form-footer {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .coordinator-company .company-form-footer .btn { width: 100%; }
+
+    .coordinator-company .company-info-card,
+    .coordinator-company .company-tip-card {
+        padding: 1rem;
+    }
+}
