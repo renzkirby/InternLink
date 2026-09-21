@@ -181,6 +181,17 @@ class DailyLog(models.Model):
     work_description = models.TextField(help_text="Summary of tasks accomplished")
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
+    REVIEW_STATUS_CHOICES = [
+        ("pending", "Pending review"),
+        ("approved", "Approved"),
+        ("revision_requested", "Needs correction"),
+    ]
+    review_status = models.CharField(
+        max_length=24,
+        choices=REVIEW_STATUS_CHOICES,
+        default="pending",
+    )
+    review_remarks = models.TextField(blank=True, default="")
 
     class Meta:
         constraints = [
